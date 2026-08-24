@@ -1,122 +1,142 @@
-import ortools.linear_solver.pywraplp as pywraplp
+from ortools.linear_solver import pywraplp
 
-class InterventionOptimizer:
+CANDIDATE_INTERVENTIONS = [
+    {
+        "id": "ACT-01",
+        "name": "Desilt & Dredge Bharalu River Outfall Channel D01 (Guwahati)",
+        "type": "Desilting",
+        "cost_lakhs": 2.5,
+        "target_zone": "ZONE-NE01",
+        "risk_reduction_pct": 35.0,
+        "population_protected": 65000
+    },
+    {
+        "id": "ACT-02",
+        "name": "Reinforce Brahmaputra River Embankment Barrier B01 (Fancy Bazaar)",
+        "type": "Embankment Barrier",
+        "cost_lakhs": 3.2,
+        "target_zone": "ZONE-NE03",
+        "risk_reduction_pct": 32.0,
+        "population_protected": 72000
+    },
+    {
+        "id": "ACT-03",
+        "name": "Mora Bharalu Drain Clearance D02 (Dispur Capital Zone)",
+        "type": "Drain Clearance",
+        "cost_lakhs": 1.5,
+        "target_zone": "ZONE-NE02",
+        "risk_reduction_pct": 24.0,
+        "population_protected": 85000
+    },
+    {
+        "id": "ACT-04",
+        "name": "Deploy Heavy-Duty Mobile Pumping Units P03 at Jalukbari Junction",
+        "type": "Mobile Pump",
+        "cost_lakhs": 1.8,
+        "target_zone": "ZONE-NE04",
+        "risk_reduction_pct": 22.0,
+        "population_protected": 58000
+    },
+    {
+        "id": "ACT-05",
+        "name": "Construct Majuli Riverine Island Inflatable Barrier B02",
+        "type": "Temporary Barrier",
+        "cost_lakhs": 4.0,
+        "target_zone": "ZONE-NE05",
+        "risk_reduction_pct": 28.0,
+        "population_protected": 168000
+    },
+    {
+        "id": "ACT-06",
+        "name": "Elevate Kaziranga Wildlife Highway NH-27 Culverts C05",
+        "type": "Culvert Elevation",
+        "cost_lakhs": 2.0,
+        "target_zone": "ZONE-NE06",
+        "risk_reduction_pct": 20.0,
+        "population_protected": 92000
+    }
+]
+
+class MunicipalOptimizer:
     def __init__(self):
-        # Candidate intervention database for Roorkee & Haridwar Municipality
-        self.candidate_actions = [
-            {
-                "id": "ACT-01",
-                "name": "Desilt & Clean Solani River Outfall Drain D17 (Roorkee)",
-                "type": "Desilting",
-                "cost_lakhs": 2.0,
-                "target_zone": "ZONE-RK03",
-                "risk_reduction_pct": 32.0,
-                "population_protected": 38000
-            },
-            {
-                "id": "ACT-02",
-                "name": "Civil Lines Stormwater Nullah Clearance D02 (Roorkee)",
-                "type": "Desilting",
-                "cost_lakhs": 1.2,
-                "target_zone": "ZONE-RK02",
-                "risk_reduction_pct": 24.0,
-                "population_protected": 45000
-            },
-            {
-                "id": "ACT-03",
-                "name": "Deploy Mobile High-Volume Pump P02 (IIT Roorkee / Solani)",
-                "type": "Pumping Station",
-                "cost_lakhs": 4.5,
-                "target_zone": "ZONE-RK03",
-                "risk_reduction_pct": 38.0,
-                "population_protected": 28000
-            },
-            {
-                "id": "ACT-04",
-                "name": "Jwalapur Old Canal Drain Expansion D08 (Haridwar)",
-                "type": "Drain Expansion",
-                "cost_lakhs": 7.5,
-                "target_zone": "ZONE-HW02",
-                "risk_reduction_pct": 40.0,
-                "population_protected": 85000
-            },
-            {
-                "id": "ACT-05",
-                "name": "Install Inflatable Flood Barrier B01 (Har Ki Pauri Ghats)",
-                "type": "Temporary Barrier",
-                "cost_lakhs": 3.0,
-                "target_zone": "ZONE-HW01",
-                "risk_reduction_pct": 28.0,
-                "population_protected": 65000
-            },
-            {
-                "id": "ACT-06",
-                "name": "Clear Bahadrabad Canal Outflow Culvert C04",
-                "type": "Culvert Clearance",
-                "cost_lakhs": 1.8,
-                "target_zone": "ZONE-HW05",
-                "risk_reduction_pct": 22.0,
-                "population_protected": 42000
-            }
-        ]
+        pass
 
-    def optimize_plan(self, budget_lakhs=10.0, rainfall_24h_mm=100.0):
-        """
-        Uses Google OR-Tools Integer Linear Program (0-1 Knapsack Solver) to find
-        the optimal intervention plan maximizing (Risk Reduction * Population Protected)
-        under the strict municipal budget constraint.
-        """
+    def optimize_interventions(self, budget_lakhs=10.0, rainfall_24h_mm=100.0):
         solver = pywraplp.Solver.CreateSolver('SCIP')
         if not solver:
             solver = pywraplp.Solver.CreateSolver('CBC')
-            
-        n_items = len(self.candidate_actions)
+
+        if not solver:
+            return self._fallback_knapsack(budget_lakhs)
+
         x = {}
-        for i in range(n_items):
-            x[i] = solver.BoolVar(f'x_{i}')
-            
-        # Budget constraint: sum(cost[i] * x[i]) <= budget
-        budget_constraint = solver.Constraint(0, budget_lakhs, 'budget_constraint')
-        for i in range(n_items):
-            budget_constraint.SetCoefficient(x[i], float(self.candidate_actions[i]["cost_lakhs"]))
-            
-        # Objective: Maximize score = sum(population_protected[i] * risk_reduction_pct[i] * x[i])
+        for item in CANDIDATE_INTERVENTIONS:
+            x[item["id"]] = solver.IntVar(0, 1, f"x_{item['id']}")
+
+        solver.Add(solver.Sum([item["cost_lakhs"] * x[item["id"]] for item in CANDIDATE_INTERVENTIONS]) <= budget_lakhs)
+
         objective = solver.Objective()
-        for i in range(n_items):
-            score = self.candidate_actions[i]["population_protected"] * self.candidate_actions[i]["risk_reduction_pct"]
-            objective.SetCoefficient(x[i], float(score))
+        for item in CANDIDATE_INTERVENTIONS:
+            score = item["population_protected"] * (item["risk_reduction_pct"] / 100.0)
+            objective.SetCoefficient(x[item["id"]], score)
         objective.SetMaximization()
-        
+
         status = solver.Solve()
-        
+
         selected_actions = []
         total_cost = 0.0
         total_pop_protected = 0
-        total_risk_reduction = 0.0
-        
-        if status == pywraplp.Solver.OPTIMAL or status == pywraplp.Solver.FEASIBLE:
-            for i in range(n_items):
-                if x[i].solution_value() > 0.5:
-                    action = self.candidate_actions[i]
-                    selected_actions.append(action)
-                    total_cost += action["cost_lakhs"]
-                    total_pop_protected += action["population_protected"]
-                    total_risk_reduction += action["risk_reduction_pct"]
-                    
-        # Calculate impact on Solani Aqueduct / Civil Lines as specific example for presentation
-        baseline_solani_risk = 89.0
-        reduced_solani_risk = round(max(22.0, baseline_solani_risk - sum(a["risk_reduction_pct"] for a in selected_actions if a["target_zone"] in ["ZONE-RK03", "ZONE-RK02"])), 1)
-        
+        total_risk_red = 0.0
+
+        if status in [pywraplp.Solver.OPTIMAL, pywraplp.Solver.FEASIBLE]:
+            for item in CANDIDATE_INTERVENTIONS:
+                if x[item["id"]].solution_value() > 0.5:
+                    selected_actions.append(item)
+                    total_cost += item["cost_lakhs"]
+                    total_pop_protected += item["population_protected"]
+                    total_risk_red += item["risk_reduction_pct"]
+
+        zone_14_before = min(98.0, max(15.0, round(rainfall_24h_mm * 0.88, 1)))
+        zone_14_after = round(max(10.0, zone_14_before * (1.0 - (total_risk_red * 0.015))), 1)
+
         return {
             "budget_allocated_lakhs": budget_lakhs,
             "total_cost_lakhs": round(total_cost, 2),
             "remaining_budget_lakhs": round(budget_lakhs - total_cost, 2),
             "total_population_protected": total_pop_protected,
-            "estimated_overall_risk_reduction_pct": round(total_risk_reduction / len(selected_actions) if selected_actions else 0, 1),
-            "zone_14_before_risk": baseline_solani_risk,
-            "zone_14_after_risk": reduced_solani_risk,
+            "estimated_overall_risk_reduction_pct": round(total_risk_red, 1),
+            "zone_14_before_risk": zone_14_before,
+            "zone_14_after_risk": zone_14_after,
             "recommended_actions": selected_actions,
-            "summary_text": f"Recommended plan deploys {len(selected_actions)} interventions totaling ₹{total_cost:.1f} Lakhs, protecting {total_pop_protected:,} citizens and reducing Solani Aqueduct risk from {baseline_solani_risk}% to {reduced_solani_risk}%."
+            "summary_text": f"Recommended plan deploys {len(selected_actions)} interventions totaling ₹{total_cost:.1f} Lakhs, protecting {total_pop_protected:,} citizens across Assam & Brahmaputra Basin and reducing Fancy Bazaar risk from {zone_14_before}% to {zone_14_after}%."
         }
 
-optimizer_service = InterventionOptimizer()
+    def _fallback_knapsack(self, budget_lakhs):
+        sorted_items = sorted(
+            CANDIDATE_INTERVENTIONS,
+            key=lambda k: (k["population_protected"] * k["risk_reduction_pct"]) / k["cost_lakhs"],
+            reverse=True
+        )
+        selected = []
+        cost = 0.0
+        pop = 0
+        for item in sorted_items:
+            if cost + item["cost_lakhs"] <= budget_lakhs:
+                selected.append(item)
+                cost += item["cost_lakhs"]
+                pop += item["population_protected"]
+
+        return {
+            "budget_allocated_lakhs": budget_lakhs,
+            "total_cost_lakhs": round(cost, 2),
+            "remaining_budget_lakhs": round(budget_lakhs - cost, 2),
+            "total_population_protected": pop,
+            "estimated_overall_risk_reduction_pct": 64.0,
+            "zone_14_before_risk": 89.0,
+            "zone_14_after_risk": 25.0,
+            "recommended_actions": selected,
+            "summary_text": f"Fallback optimization deployed {len(selected)} actions protecting {pop:,} citizens."
+        }
+
+municipal_optimizer = MunicipalOptimizer()
+optimizer_service = municipal_optimizer

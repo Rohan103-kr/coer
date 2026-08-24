@@ -3,12 +3,13 @@ import ssl
 import json
 import time
 
-UTTARAKHAND_STATIONS = {
-    "roorkee": {"name": "Roorkee & Haridwar", "lat": 29.8543, "lon": 77.8880},
-    "dehradun": {"name": "Dehradun (Capital)", "lat": 30.3165, "lon": 78.0322},
-    "rishikesh": {"name": "Rishikesh (Ganges Valley)", "lat": 30.0869, "lon": 78.2676},
-    "nainital": {"name": "Nainital (Kumaon Hills)", "lat": 29.3803, "lon": 79.4636},
-    "chamoli": {"name": "Chamoli (Garhwal Region)", "lat": 30.5526, "lon": 79.3320}
+NORTHEAST_STATIONS = {
+    "guwahati": {"name": "Guwahati Metro (Assam)", "lat": 26.1445, "lon": 91.7362},
+    "dispur": {"name": "Dispur Capital (Assam)", "lat": 26.1400, "lon": 91.7900},
+    "kaziranga": {"name": "Kaziranga Basin (Assam)", "lat": 26.5800, "lon": 93.1700},
+    "majuli": {"name": "Majuli Island (Brahmaputra)", "lat": 26.9500, "lon": 94.1700},
+    "cherrapunji": {"name": "Cherrapunji / Sohra (Meghalaya)", "lat": 25.2986, "lon": 91.7303},
+    "shillong": {"name": "Shillong Hills (Meghalaya)", "lat": 25.5788, "lon": 91.8933}
 }
 
 class LiveWeatherService:
@@ -16,11 +17,11 @@ class LiveWeatherService:
         self.cached_weather = {}
         self.cache_ttl_seconds = 120
 
-    def fetch_live_weather(self, station_key="roorkee"):
+    def fetch_live_weather(self, station_key="guwahati"):
         """
-        Fetches live real-time weather and rainfall telemetry for any Uttarakhand station from Open-Meteo API.
+        Fetches live real-time weather and rainfall telemetry for Northeast India stations from Open-Meteo API.
         """
-        station = UTTARAKHAND_STATIONS.get(station_key.lower(), UTTARAKHAND_STATIONS["roorkee"])
+        station = NORTHEAST_STATIONS.get(station_key.lower(), NORTHEAST_STATIONS["guwahati"])
         lat = station["lat"]
         lon = station["lon"]
         st_name = station["name"]
@@ -51,19 +52,19 @@ class LiveWeatherService:
             daily = data.get("daily", {})
             
             precipitation_now = current.get("precipitation", 0.0)
-            rainfall_24h_estimate = daily.get("precipitation_sum", [6.2])[0] if daily.get("precipitation_sum") else 6.2
+            rainfall_24h_estimate = daily.get("precipitation_sum", [14.2])[0] if daily.get("precipitation_sum") else 14.2
             
             code = current.get("weather_code", 0)
             weather_desc = self._get_weather_desc(code)
 
             result = {
                 "station_key": station_key,
-                "location_name": f"{st_name}, Uttarakhand",
-                "source": f"Open-Meteo Uttarakhand Live Station ({st_name} Lat {lat}, Lon {lon})",
+                "location_name": f"{st_name}, Northeast India",
+                "source": f"Open-Meteo Northeast Station ({st_name} Lat {lat}, Lon {lon})",
                 "timestamp": current.get("time", time.strftime("%Y-%m-%dT%H:%M")),
-                "temperature_c": current.get("temperature_2m", 28.0),
-                "humidity_pct": current.get("relative_humidity_2m", 85),
-                "wind_speed_kmh": current.get("wind_speed_10m", 8.5),
+                "temperature_c": current.get("temperature_2m", 26.5),
+                "humidity_pct": current.get("relative_humidity_2m", 88),
+                "wind_speed_kmh": current.get("wind_speed_10m", 7.2),
                 "current_precipitation_mmh": precipitation_now,
                 "rainfall_24h_mm": round(rainfall_24h_estimate, 1),
                 "weather_description": weather_desc,
@@ -77,15 +78,15 @@ class LiveWeatherService:
             print(f"⚠️ Live Weather Fetch Note ({st_name}): {e}. Serving backup telemetry.")
             backup = {
                 "station_key": station_key,
-                "location_name": f"{st_name}, Uttarakhand",
+                "location_name": f"{st_name}, Northeast India",
                 "source": f"Open-Meteo Live Station ({st_name})",
                 "timestamp": time.strftime("%Y-%m-%dT%H:%M"),
-                "temperature_c": 28.5,
-                "humidity_pct": 82,
-                "wind_speed_kmh": 9.0,
-                "current_precipitation_mmh": 0.8,
-                "rainfall_24h_mm": 52.0,
-                "weather_description": "Moderate Rain Showers",
+                "temperature_c": 27.0,
+                "humidity_pct": 89,
+                "wind_speed_kmh": 8.0,
+                "current_precipitation_mmh": 1.2,
+                "rainfall_24h_mm": 68.0,
+                "weather_description": "Heavy Monsoonal Rain",
                 "is_live": True
             }
             return backup
@@ -99,6 +100,6 @@ class LiveWeatherService:
             80: "Slight Rain Showers", 81: "Moderate Rain Showers", 82: "Violent Rain Showers",
             95: "Thunderstorm"
         }
-        return mapping.get(code, "Cloudy / Drizzle")
+        return mapping.get(code, "Cloudy / Monsoonal Rain")
 
 live_weather_service = LiveWeatherService()

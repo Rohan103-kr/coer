@@ -1,4 +1,4 @@
-// map.js - Leaflet GIS Map Management for Roorkee & Haridwar DrainMind AI
+// map.js - Leaflet GIS Map Management for Northeast India (Assam & Meghalaya / Brahmaputra Basin)
 
 let map = null;
 let currentTileLayer = null;
@@ -15,9 +15,9 @@ let currentZonesData = null;
 let currentDrainsData = [];
 
 function initMap() {
-  // Center map on Roorkee & Haridwar region (Uttarakhand)
+  // Center map on Northeast India (Guwahati / Assam region)
   map = L.map('map', {
-    center: [29.9000, 77.9800],
+    center: [26.1550, 91.7400],
     zoom: 11,
     zoomControl: true
   });
@@ -44,10 +44,10 @@ function initMap() {
   municipalHighlightLayer = L.layerGroup().addTo(map);
   cityLabelMarkersGroup = L.layerGroup().addTo(map);
 
-  // Add prominent permanent City Label Markers
+  // Add permanent City Label Markers for Northeast India
   addCityNameLabels();
 
-  console.log("🗺️ Leaflet GIS Map Initialized for Roorkee & Haridwar Flood Resilience Platform");
+  console.log("🗺️ Leaflet GIS Map Initialized for Northeast India Flood Resilience Platform");
 }
 
 function addCityNameLabels() {
@@ -55,26 +55,26 @@ function addCityNameLabels() {
     cityLabelMarkersGroup.clearLayers();
   }
 
-  const roorkeeMarker = L.marker([29.8649, 77.8965], {
+  const guwahatiMarker = L.marker([26.1850, 91.7420], {
     icon: L.divIcon({
       className: 'city-name-badge badge-roorkee',
-      html: '🏙️ ROORKEE CITY',
-      iconSize: [120, 28],
-      iconAnchor: [60, 14]
-    })
-  });
-
-  const haridwarMarker = L.marker([29.9560, 78.1700], {
-    icon: L.divIcon({
-      className: 'city-name-badge badge-haridwar',
-      html: '🏛️ HARIDWAR CITY',
+      html: '🏙️ GUWAHATI METRO',
       iconSize: [130, 28],
       iconAnchor: [65, 14]
     })
   });
 
-  cityLabelMarkersGroup.addLayer(roorkeeMarker);
-  cityLabelMarkersGroup.addLayer(haridwarMarker);
+  const dispurMarker = L.marker([26.1400, 91.7900], {
+    icon: L.divIcon({
+      className: 'city-name-badge badge-haridwar',
+      html: '🏛️ DISPUR CAPITAL',
+      iconSize: [130, 28],
+      iconAnchor: [65, 14]
+    })
+  });
+
+  cityLabelMarkersGroup.addLayer(guwahatiMarker);
+  cityLabelMarkersGroup.addLayer(dispurMarker);
 }
 
 function switchBasemap(type) {
@@ -109,7 +109,7 @@ function updateZonesMap(zonesGeoJSON) {
         weight: 1.0,
         opacity: 0.6,
         color: '#ffffff',
-        fillOpacity: 0.25 // Clean subtle fill opacity to declutter map
+        fillOpacity: 0.25
       };
     },
     onEachFeature: function (feature, layer) {
@@ -148,7 +148,7 @@ function updateRoadsMap(roadsData) {
     const line = L.polyline([r.start_coords, r.end_coords], {
       color: r.status_color || '#cbd5e1',
       weight: r.is_overridden ? 4 : 2,
-      opacity: 0.3, // Dim background roads so active route stands out sharply
+      opacity: 0.3,
       dashArray: r.is_overridden ? '6, 6' : null
     });
     
@@ -184,7 +184,7 @@ function updateDrainsMap(drainsData) {
 
     poly.bindPopup(`
       <div style="font-family: Inter; padding: 4px;">
-        <strong style="color: ${color};">🌊 SWD Drain ${d.drain_id}: ${d.drain_name}</strong><br/>
+        <strong style="color: ${color};">🌊 Channel ${d.drain_id}: ${d.drain_name}</strong><br/>
         Ward: ${d.ward} | Bottleneck Confidence: <strong>${d.confidence}</strong>
       </div>
     `);
@@ -195,12 +195,10 @@ function updateDrainsMap(drainsData) {
   drainsLayer = L.layerGroup(drainLines).addTo(map);
 }
 
-// Clean Focused Route Drawing for Selected Locations Only
 function drawRouteOnMap(routeData, modeColor = '#0284c7') {
   clearRouteLines();
   if (!routeData || !routeData.coordinates || routeData.coordinates.length === 0) return;
 
-  // 1. Draw bold glowing active route polyline
   const polyline = L.polyline(routeData.coordinates, {
     color: modeColor,
     weight: 7,
@@ -211,7 +209,6 @@ function drawRouteOnMap(routeData, modeColor = '#0284c7') {
 
   routePolylines.push(polyline);
 
-  // 2. Add Start Marker (Origin) & End Marker (Destination)
   const startCoords = routeData.coordinates[0];
   const endCoords = routeData.coordinates[routeData.coordinates.length - 1];
 
@@ -236,7 +233,6 @@ function drawRouteOnMap(routeData, modeColor = '#0284c7') {
   routeMarkers.push(startMarker);
   routeMarkers.push(endMarker);
 
-  // 3. Zoom & fit map viewport tightly around selected route only
   map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
 }
 

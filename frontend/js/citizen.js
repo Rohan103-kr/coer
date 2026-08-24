@@ -1,4 +1,4 @@
-// citizen.js - Citizen Mode Navigation, Turn-by-Turn Directions, Live GPS Tracking & Incident Reporting
+// citizen.js - Citizen Mode Navigation, Turn-by-Turn Directions, Live GPS Tracking & Incident Reporting for Northeast India
 
 let currentRoutesData = null;
 let selectedRouteKey = 'safest';
@@ -9,15 +9,14 @@ let watchPositionId = null;
 let isLiveGpsTrackingActive = false;
 
 const PLACE_DATABASE = [
-  { name: "IIT Roorkee Main Campus", zone_id: "ZONE-RK01", node_id: "N_IIT_ROORKEE", lat: 29.8649, lng: 77.8965 },
-  { name: "Civil Lines Roorkee", zone_id: "ZONE-RK02", node_id: "N_CIVIL_LINES", lat: 29.8690, lng: 77.8920 },
-  { name: "Solani River Aqueduct", zone_id: "ZONE-RK03", node_id: "N_SOLANI_AQUEDUCT", lat: 29.8780, lng: 77.9100 },
-  { name: "Ganeshpur / Roorkee Station", zone_id: "ZONE-RK04", node_id: "N_IIT_ROORKEE", lat: 29.8620, lng: 77.8880 },
-  { name: "Har Ki Pauri Ghats (Haridwar)", zone_id: "ZONE-HW01", node_id: "N_HAR_KI_PAURI", lat: 29.9560, lng: 78.1700 },
-  { name: "Jwalapur Market & Bazaar", zone_id: "ZONE-HW02", node_id: "N_JWALAPUR", lat: 29.9280, lng: 78.1150 },
-  { name: "BHEL Ranipur Township", zone_id: "ZONE-HW03", node_id: "N_BHEL_RANIPUR", lat: 29.9150, lng: 78.0780 },
-  { name: "Kankhal Heritage Temple Zone", zone_id: "ZONE-HW04", node_id: "N_KANKHAL", lat: 29.9320, lng: 78.1400 },
-  { name: "Bahadrabad Canal Junction", zone_id: "ZONE-HW05", node_id: "N_BAHADRABAD", lat: 29.9050, lng: 78.0350 }
+  { name: "Gauhati University / Jalukbari Junction", zone_id: "ZONE-NE04", node_id: "N_JALUKBARI", lat: 26.1550, lng: 91.6650 },
+  { name: "Fancy Bazaar / Panbazar Commercial Hub", zone_id: "ZONE-NE01", node_id: "N_FANCY_BAZAAR", lat: 26.1850, lng: 91.7420 },
+  { name: "Dispur Capital Secretariat Complex", zone_id: "ZONE-NE02", node_id: "N_DISPUR", lat: 26.1400, lng: 91.7900 },
+  { name: "Brahmaputra River Bank Bypass", zone_id: "ZONE-NE03", node_id: "N_FANCY_BAZAAR", lat: 26.1900, lng: 91.7250 },
+  { name: "Kaziranga National Park Corridor (NH-27)", zone_id: "ZONE-NE06", node_id: "N_KAZIRANGA", lat: 26.5800, lng: 93.1700 },
+  { name: "Majuli River Island Ferry Terminal", zone_id: "ZONE-NE05", node_id: "N_MAJULI", lat: 26.9500, lng: 94.1700 },
+  { name: "Cherrapunji / Sohra Heavy Rainfall Zone", zone_id: "ZONE-NE07", node_id: "N_CHERRAPUNJI", lat: 25.2986, lng: 91.7303 },
+  { name: "Shillong Hills Capital Area", zone_id: "ZONE-NE08", node_id: "N_SHILLONG", lat: 25.5788, lng: 91.8933 }
 ];
 
 function onPlaceSearchInput(query) {
@@ -68,18 +67,16 @@ function clearPlaceSearch() {
 /* 🎯 Live Location Feature: Single Lock & Continuous Tracking */
 function locateUserGPS() {
   if ('geolocation' in navigator) {
-    speakAlert("Locking onto your live GPS location...");
-    
     navigator.geolocation.getCurrentPosition(
       (position) => {
         handleGpsPositionUpdate(position);
         startContinuousGpsTracking();
       },
       (error) => {
-        console.warn("GPS Geolocation notice (using Roorkee GPS baseline):", error.message);
-        const fallbackPos = { coords: { latitude: 29.8649, longitude: 77.8965, accuracy: 15 } };
+        console.warn("GPS Geolocation notice (using Guwahati GPS baseline):", error.message);
+        const fallbackPos = { coords: { latitude: 26.1550, longitude: 91.6650, accuracy: 15 } };
         handleGpsPositionUpdate(fallbackPos);
-        alert("📍 Live GPS locked to Roorkee (29.8649, 77.8965). Calculating safest route...");
+        alert("📍 Live GPS locked to Guwahati Metro (26.1550, 91.6650). Calculating safest route...");
       },
       { enableHighAccuracy: true, timeout: 6000 }
     );
@@ -118,7 +115,6 @@ function addUserGpsMarker(lat, lng, accuracy = 20) {
   if (userGpsMarker && map) map.removeLayer(userGpsMarker);
   if (userAccuracyCircle && map) map.removeLayer(userAccuracyCircle);
 
-  // 1. Google Maps style blue translucent accuracy circle
   userAccuracyCircle = L.circle([lat, lng], {
     radius: accuracy,
     fillColor: '#3b82f6',
@@ -127,7 +123,6 @@ function addUserGpsMarker(lat, lng, accuracy = 20) {
     weight: 1.5
   }).addTo(map);
 
-  // 2. Pulsing Google Maps blue location marker
   userGpsMarker = L.circleMarker([lat, lng], {
     radius: 9,
     fillColor: '#0284c7',
@@ -230,12 +225,6 @@ function selectRouteOption(modeKey) {
     
     drawRouteOnMap(route, color);
     renderStepDirections(route);
-    
-    if (modeKey === 'safest') {
-      speakAlert(`Safest route selected. Travel time is ${route.travel_time_min} minutes with low flood risk.`);
-    } else if (modeKey === 'fastest' && route.avg_flood_risk > 50) {
-      speakAlert(`Warning: Fastest route has high waterlogging risk of ${route.avg_flood_risk} percent.`);
-    }
   }
 }
 
@@ -268,7 +257,7 @@ function renderStepDirections(route) {
       <span class="dir-icon">${idx % 2 === 0 ? '🚗' : '↗️'}</span>
       <div>
         <div>Drive along <strong>${e.name}</strong></div>
-        <div class="dir-dist">Segment Risk: <strong style="color:${isRisky ? '#dc2626' : '#16a34a'}">${e.flood_probability}%</strong> ${isRisky ? '⚠️ (Waterlogging Warning)' : '✅ (Clear Road)'}</div>
+        <div class="dir-dist">Segment Risk: <strong style="color:${isRisky ? '#dc2626' : '#16a34a'}">${e.flood_probability}%</strong> ${isRisky ? '⚠️ (Brahmaputra/Waterlogging Warning)' : '✅ (Clear Road)'}</div>
       </div>
     `;
     list.appendChild(li);
@@ -309,8 +298,8 @@ async function submitIncidentReport() {
     road_id: roadId,
     water_depth: depthEl ? depthEl.value : 'Medium',
     passable: passableEl ? (passableEl.value === 'yes') : false,
-    latitude: 29.8649,
-    longitude: 77.8965
+    latitude: 26.1550,
+    longitude: 91.6650
   };
 
   try {
@@ -322,10 +311,9 @@ async function submitIncidentReport() {
     const res = await resp.json();
     
     closeReportModal();
-    speakAlert(`Incident report received for road ${roadId}. Road risk set to 95 percent. Recalculating routes.`);
     alert(`🚨 Incident report submitted! Road ${roadId} risk updated to 95%. Recalculating routes...`);
     
-    addIncidentMarker(29.8649, 77.8965, roadId, payload.water_depth);
+    addIncidentMarker(26.1550, 91.6650, roadId, payload.water_depth);
     
     await fetchRoads();
     if (currentRoutesData) {

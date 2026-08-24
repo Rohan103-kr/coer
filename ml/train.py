@@ -10,18 +10,18 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 from ml.preprocessing import load_data, prepare_splits, FEATURE_COLS
 
 def train_and_evaluate():
-    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "roorkee_haridwar_floods.csv")
+    data_path = os.path.join(os.path.dirname(__file__), "..", "data", "northeast_floods.csv")
     if not os.path.exists(data_path):
-        from database.build_roorkee_haridwar_dataset import build_roorkee_haridwar_dataset
-        build_roorkee_haridwar_dataset()
+        from database.build_northeast_dataset import build_northeast_dataset
+        build_northeast_dataset()
         
     df, X, y = load_data(data_path)
     X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler = prepare_splits(X, y)
     
     print("=" * 60)
-    print("🤖 ROORKEE & HARIDWAR FLOOD RISK MODEL TRAINING (PHASE 1)")
+    print("🤖 NORTHEAST INDIA (ASSAM / BRAHMAPUTRA BASIN) FLOOD MODEL TRAINING")
     print("=" * 60)
-    print(f"Dataset: Roorkee & Haridwar Hydro-Meteorological Dataset ({len(df)} records)")
+    print(f"Dataset: Northeast India Flood Dataset ({len(df)} records)")
     
     # 1. Gradient Boosting Classifier (XGBoost Equivalent)
     xgb_model = HistGradientBoostingClassifier(
@@ -40,7 +40,6 @@ def train_and_evaluate():
     rf_preds = rf_model.predict(X_test)
     rf_probs = rf_model.predict_proba(X_test)[:, 1]
     
-    # Compute Metrics
     metrics = {
         "XGBoost / HistGB": {
             "Accuracy": round(float(accuracy_score(y_test, xgb_preds)), 4),
@@ -59,7 +58,7 @@ def train_and_evaluate():
     }
     
     metrics_df = pd.DataFrame(metrics).T
-    print("\nModel Evaluation Table (Roorkee & Haridwar Test Set):")
+    print("\nModel Evaluation Table (Northeast India Test Set):")
     print(metrics_df.to_string())
     print("\n" + "=" * 60)
     
@@ -73,13 +72,13 @@ def train_and_evaluate():
         "feature_cols": FEATURE_COLS,
         "metrics": metrics,
         "feature_importances": feat_imp,
-        "dataset_name": "Roorkee & Haridwar (Uttarakhand) Hydro-Meteorological Dataset"
+        "dataset_name": "Northeast India (Assam & Meghalaya / Brahmaputra Basin) Dataset"
     }
     
     model_dir = os.path.join(os.path.dirname(__file__), "..", "data")
     model_path = os.path.join(model_dir, "model.pkl")
     joblib.dump(save_dict, model_path)
-    print(f"✅ Roorkee & Haridwar Model saved successfully to: {model_path}")
+    print(f"✅ Northeast India Flood Risk Model saved successfully to: {model_path}")
     
     return save_dict
 

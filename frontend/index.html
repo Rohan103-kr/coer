@@ -3,355 +3,510 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌾 CropPulse AI | Crop-to-Market Intelligence Platform</title>
-  <meta name="description" content="AI-powered AgriTech platform for Crop Recommendation, Yield Prediction, Mandi Price Forecasting, Sell Timing Optimization, and What-If Simulation.">
+  <title>🌧️ DrainMind AI | Northeast India Flood Resilience & Optimization</title>
+  <meta name="description" content="Predict → Explain → Route → Optimize urban flood risk and Brahmaputra River basin waterlogging for Northeast India (Assam & Meghalaya) with AI/ML, Open-Meteo Live Weather, GIS, and OR-Tools.">
   
-  <!-- Google Fonts: Inter & Outfit -->
+  <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   
-  <!-- Chart.js for Mandi Price Trajectory -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <!-- Leaflet GIS Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
   
   <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   
-  <!-- Custom CSS -->
+  <!-- Custom Minimalist CSS -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="light-theme">
-  <!-- Application Header -->
+  <!-- Minimal Header Bar -->
   <header class="app-header">
     <div class="brand-group">
-      <div class="brand-logo ag-logo">
-        <i data-lucide="sprout" class="icon-green"></i>
+      <div class="brand-logo">
+        <i data-lucide="cloud-rain" class="icon-blue"></i>
       </div>
       <div>
-        <h1 class="brand-title">CropPulse <span class="badge-ai badge-agri">AI</span></h1>
-        <p class="brand-subtitle">Crop-to-Market Intelligence & Profit Optimization</p>
+        <h1 class="brand-title">DrainMind <span class="badge-ai">AI</span></h1>
+        <p class="brand-subtitle">Northeast India (Assam & Meghalaya) Flood Resilience</p>
       </div>
     </div>
 
-    <!-- Main Navigation Tabs -->
+    <!-- Mode Switcher Tabs + Judge Demo Button -->
     <div class="mode-tabs">
-      <button id="tab-advisor" class="tab-btn active" onclick="switchAgriTab('advisor')">
-        <i data-lucide="sprout"></i> Crop Advisor
+      <button id="tab-citizen" class="tab-btn active" onclick="switchMode('citizen')">
+        <i data-lucide="user-check"></i> Citizen Mode
       </button>
-      <button id="tab-selltiming" class="tab-btn" onclick="switchAgriTab('selltiming')">
-        <i data-lucide="trending-up"></i> Sell Timing AI
+      <button id="tab-municipal" class="tab-btn" onclick="switchMode('municipal')">
+        <i data-lucide="building-2"></i> Municipal Mode
       </button>
-      <button id="tab-whatif" class="tab-btn" onclick="switchAgriTab('whatif')">
-        <i data-lucide="sliders"></i> What-If Simulator
-      </button>
-      <button id="tab-drainmind" class="tab-btn" onclick="switchAgriTab('drainmind')">
-        <i data-lucide="cloud-rain"></i> DrainMind GIS
+      <button class="btn-demo-tour" onclick="startJudgeTour()">
+        <i data-lucide="play-circle"></i> 1-Min Judge Tour
       </button>
     </div>
 
-    <!-- Header Stats -->
+    <!-- Live Weather Status & Model Metrics Buttons -->
     <div class="header-status">
       <button class="btn-metrics-toggle" onclick="openMetricsModal()">
-        <i data-lucide="award"></i> ML Accuracy (99.4%)
+        <i data-lucide="bar-chart-2"></i> ML Metrics (100%)
       </button>
 
-      <div class="status-pill status-risk bg-agri-light">
-        <i data-lucide="map-pin" class="icon-green"></i>
-        <span id="header-loc-disp">Region: Uttarakhand / Haryana</span>
+      <button id="live-weather-btn" class="btn-live-toggle" onclick="toggleLiveWeatherMode()">
+        <span class="live-dot pulse"></span>
+        <span id="live-mode-label">LIVE WEATHER (Northeast India)</span>
+      </button>
+
+      <div class="status-pill status-rainfall">
+        <i data-lucide="droplet" class="icon-blue"></i>
+        <span id="current-rainfall-disp">Rainfall: 100 mm</span>
+      </div>
+      <div class="status-pill status-risk" id="city-risk-pill">
+        <i data-lucide="shield-alert" class="icon-brown"></i>
+        <span id="city-avg-risk">Avg Risk: 48%</span>
       </div>
     </div>
   </header>
 
-  <!-- Main Container -->
+  <!-- Main Application Container -->
   <main class="app-container">
     
-    <!-- Left Input & Control Panel -->
-    <aside class="sidebar-panel sidebar-agri">
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar-panel">
       
-      <!-- 4-Step System Banner -->
-      <div class="card card-flow-banner bg-agri-amber">
-        <div class="flow-banner-title">🌾 4-STEP CROP-TO-MARKET PIPELINE</div>
+      <!-- Simplified 4-Step How It Works Banner for Evaluators -->
+      <div class="card card-flow-banner">
+        <div class="flow-banner-title">💡 4-STEP AI RESILIENCE SYSTEM</div>
         <div class="flow-steps-grid">
-          <div class="fs-item"><span>🌱 1. Crop</span></div>
+          <div class="fs-item"><span>🌧️ 1. Rain</span></div>
           <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>📈 2. Yield</span></div>
+          <div class="fs-item"><span>🧠 2. AI Risk</span></div>
           <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>💰 3. Price</span></div>
+          <div class="fs-item"><span>🚗 3. Safe Path</span></div>
           <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>🏆 4. Profit</span></div>
+          <div class="fs-item"><span>💰 4. City Plan</span></div>
         </div>
       </div>
 
-      <!-- Farmer Inputs Form -->
-      <div class="card panel-card">
-        <h2 class="card-title"><i data-lucide="sliders" class="icon-green"></i> Farmer Profile & Farm Parameters</h2>
-        <p class="card-desc">Enter your land details to calculate risk-adjusted profit.</p>
-        
-        <div class="form-group">
-          <label class="form-label">State / Region</label>
-          <select id="agri-state" class="form-select" onchange="runAgriAnalysis()">
-            <option value="Uttarakhand">📍 Uttarakhand (Haridwar / US Nagar)</option>
-            <option value="Haryana" selected>📍 Haryana (Karnal / Hisar)</option>
-            <option value="Punjab">📍 Punjab (Ludhiana / Patiala)</option>
-            <option value="Uttar Pradesh">📍 Uttar Pradesh (Saharanpur)</option>
+      <!-- Live Real-Time Banner -->
+      <div id="live-weather-card" class="card card-live-banner" style="display: none;">
+        <div class="live-banner-header">
+          <span class="badge-live"><span class="live-dot"></span> LIVE NORTHEAST METEO FEED</span>
+          <select id="uk-station-select" class="form-select-sm" onchange="onStationChanged(this.value)">
+            <option value="guwahati" selected>📍 Guwahati Metro (Assam)</option>
+            <option value="dispur">📍 Dispur Capital (Assam)</option>
+            <option value="kaziranga">📍 Kaziranga Basin (Assam)</option>
+            <option value="majuli">📍 Majuli Island (Brahmaputra)</option>
+            <option value="cherrapunji">📍 Cherrapunji / Sohra (Meghalaya)</option>
+            <option value="shillong">📍 Shillong Hills (Meghalaya)</option>
           </select>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Land Size (Acres): <strong id="land-acres-disp" class="text-green">5 Acres</strong></label>
-          <input type="range" id="land-acres" min="1" max="25" value="5" step="0.5" oninput="document.getElementById('land-acres-disp').innerText = this.value + ' Acres'; runAgriAnalysis();">
+        <div class="live-metrics-grid">
+          <div class="lm-box">
+            <span class="lm-label">24h Cumulative Rain</span>
+            <span id="live-rf-val" class="lm-value text-blue">14.2 mm</span>
+          </div>
+          <div class="lm-box">
+            <span class="lm-label">Temp / Humidity</span>
+            <span id="live-temp-val" class="lm-value">26.5°C (88%)</span>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Soil Type</label>
-          <select id="agri-soil" class="form-select" onchange="runAgriAnalysis()">
-            <option value="Loamy" selected>🪴 Loamy Soil (Optimal for Mustard/Wheat)</option>
-            <option value="Clay">🧱 Clay Soil (Best for Paddy/Sugarcane)</option>
-            <option value="Sandy Loam">🏜️ Sandy Loam (Best for Potato/Mustard)</option>
-            <option value="Alluvial">🌾 Alluvial Soil (High Fertility)</option>
-          </select>
+        <div class="live-status-text" id="live-weather-desc">
+          Condition: Monsoonal Rain / Brahmaputra Surge
         </div>
-
-        <div class="form-group">
-          <label class="form-label">Irrigation & Water Access</label>
-          <select id="agri-water" class="form-select" onchange="runAgriAnalysis()">
-            <option value="Medium" selected>💧 Medium (Canal + Tubewell)</option>
-            <option value="High">🌊 High (Continuous Canal Access)</option>
-            <option value="Rainfed">🌧️ Rainfed (Monsoon Dependent)</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Cultivation Budget: <strong id="budget-disp" class="text-green">₹ 60,000</strong></label>
-          <input type="range" id="agri-budget" min="10000" max="200000" value="60000" step="5000" oninput="document.getElementById('budget-disp').innerText = '₹ ' + parseInt(this.value).toLocaleString(); runAgriAnalysis();">
-        </div>
-
-        <button class="btn btn-green" onclick="runAgriAnalysis()">
-          <i data-lucide="sparkles"></i> Calculate Best Crop & Profit
-        </button>
+        <div id="live-station-time" class="live-time" style="margin-top: 4px;">Station • Just now</div>
       </div>
-
-      <!-- Quick Export PDF Button -->
-      <button class="btn btn-outline-brown" style="width: 100%; margin-top: 10px;" onclick="exportFarmerReportPDF()">
-        <i data-lucide="file-text"></i> Export Official Farmer Report (PDF)
-      </button>
-    </aside>
-
-    <!-- Right Main Workspace Content Area -->
-    <section class="workspace-area">
       
-      <!-- TAB 1: CROP ADVISOR & RECOMMENDATION -->
-      <div id="agri-panel-advisor" class="agri-panel active">
-        
-        <!-- Hero Recommendation Banner -->
-        <div id="hero-crop-card" class="card hero-agri-card">
-          <div class="hero-header">
-            <span class="badge-rec">⭐ TOP RECOMMENDED CROP</span>
-            <span id="hero-decision-score" class="hero-score">Decision Score: 86 / 100</span>
-          </div>
-          <div class="hero-body">
-            <div class="hero-main-title">
-              <h2 id="hero-crop-name">MUSTARD</h2>
-              <span id="hero-risk-badge" class="risk-badge risk-mod">Weather Risk: Medium</span>
-            </div>
-            <div class="hero-stats-grid">
-              <div class="hs-box">
-                <span class="hs-lbl">Expected Net Profit</span>
-                <span id="hero-net-profit" class="hs-val text-green">₹ 28,400</span>
-              </div>
-              <div class="hs-box">
-                <span class="hs-lbl">Expected Yield</span>
-                <span id="hero-yield-val" class="hs-val">8.5 q / acre (42.5 q)</span>
-              </div>
-              <div class="hs-box">
-                <span class="hs-lbl">Peak Mandi Price</span>
-                <span id="hero-peak-price" class="hs-val text-amber">₹ 6,200 / q</span>
-              </div>
-              <div class="hs-box">
-                <span class="hs-lbl">Optimal Selling Window</span>
-                <span id="hero-sell-window" class="hs-val text-blue">March 12–25</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Crop Comparison Matrix Table & Risk Scores -->
-        <div class="card panel-card" style="margin-top: 16px;">
-          <div class="card-header-with-btn">
-            <h3 class="card-title"><i data-lucide="table" class="icon-green"></i> Crop Profitability & Risk Comparison Matrix</h3>
-            <span class="badge-tag">Sorted by Decision Score</span>
-          </div>
-          <div class="table-responsive">
-            <table id="crop-matrix-table" class="agri-matrix-table">
-              <thead>
-                <tr>
-                  <th>Crop</th>
-                  <th>Expected Yield</th>
-                  <th>Est. Cost</th>
-                  <th>Peak Mandi Price</th>
-                  <th>Expected Revenue</th>
-                  <th>Net Profit</th>
-                  <th>Risk Level</th>
-                  <th>Decision Score</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="crop-matrix-body">
-                <!-- Dynamic Rows -->
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 2: SELL TIMING AI & MANDI FORECAST -->
-      <div id="agri-panel-selltiming" class="agri-panel">
+      <!-- 👤 CITIZEN MODE CONTENT -->
+      <section id="panel-citizen" class="mode-panel active">
         <div class="card panel-card">
           <div class="card-header-with-btn">
-            <div>
-              <h2 class="card-title"><i data-lucide="trending-up" class="icon-amber"></i> Sell Timing AI — 12-Month Mandi Price Forecast</h2>
-              <p class="card-desc">AI predicts optimal selling window to maximize price per quintal.</p>
-            </div>
-            <select id="sell-crop-select" class="form-select-sm" onchange="loadSellTimingChart(this.value)">
-              <option value="Mustard" selected>🌾 Mustard</option>
-              <option value="Wheat">🌾 Wheat</option>
-              <option value="Potato">🥔 Potato</option>
-              <option value="Paddy (Rice)">🌾 Paddy (Rice)</option>
-              <option value="Sugarcane">🎋 Sugarcane</option>
-              <option value="Maize">🌽 Maize</option>
+            <h2 class="card-title">
+              <i data-lucide="navigation" class="icon-blue"></i> Flood-Aware Navigation
+            </h2>
+            <button class="btn btn-sm btn-outline-blue" onclick="locateUserGPS()">
+              📍 Use My Live GPS
+            </button>
+          </div>
+          <p class="card-desc">Safe, waterlogging-free routing across Guwahati & Assam corridors.</p>
+          
+          <div class="form-group">
+            <label class="form-label">Starting Point (Origin)</label>
+            <select id="route-origin" class="form-select" onchange="onRouteInputsChanged()">
+              <option value="N_JALUKBARI">📍 Gauhati University / Jalukbari</option>
+              <option value="USER_LIVE_GPS">📡 My Current Live GPS Location</option>
+              <option value="N_FANCY_BAZAAR">📍 Fancy Bazaar / Panbazar</option>
+              <option value="N_DISPUR">📍 Dispur Capital Complex</option>
+              <option value="N_KAZIRANGA">📍 Kaziranga Highway Corridor</option>
             </select>
           </div>
 
-          <!-- Peak Selling Window Banner -->
-          <div class="card sell-banner bg-amber-soft" style="margin-bottom: 16px;">
-            <div class="sb-grid">
-              <div>
-                <span class="sb-lbl">Recommended Peak Window</span>
-                <h3 id="st-window-disp" class="sb-title text-amber">March 12–March 25</h3>
-              </div>
-              <div>
-                <span class="sb-lbl">Peak Expected Price</span>
-                <h3 id="st-peak-price-disp" class="sb-title text-green">₹ 6,200 / quintal</h3>
-              </div>
-              <div>
-                <span class="sb-lbl">Extra Revenue Gain</span>
-                <h3 id="st-gain-disp" class="sb-title text-blue">+ ₹ 1,100 / quintal</h3>
-              </div>
-            </div>
-            <p id="st-advisory-note" class="sb-note">Harvest in early March, store in dry warehouse for 2-3 weeks, and sell during March 12–25 peak window.</p>
+          <div class="form-group">
+            <label class="form-label">Destination</label>
+            <select id="route-dest" class="form-select" onchange="onRouteInputsChanged()">
+              <option value="N_DISPUR">🏁 Dispur Capital Secretariat</option>
+              <option value="N_FANCY_BAZAAR">🏁 Fancy Bazaar Commercial Hub</option>
+              <option value="N_KAZIRANGA">🏁 Kaziranga Corridor (NH-27)</option>
+              <option value="N_MAJULI">🏁 Majuli River Island</option>
+              <option value="N_JALUKBARI">🏁 Jalukbari Junction</option>
+            </select>
           </div>
 
-          <!-- Chart Canvas -->
-          <div class="chart-container" style="position: relative; height:320px;">
-            <canvas id="mandiPriceChart"></canvas>
-          </div>
+          <button class="btn btn-primary" onclick="calculateRoute()">
+            <i data-lucide="route"></i> Find Optimal Route
+          </button>
         </div>
-      </div>
 
-      <!-- TAB 3: WHAT-IF SCENARIO SIMULATOR -->
-      <div id="agri-panel-whatif" class="agri-panel">
-        <div class="card panel-card">
-          <h2 class="card-title"><i data-lucide="sliders" class="icon-blue"></i> What-If Climate & Rainfall Simulator</h2>
-          <p class="card-desc">Simulate monsoon rainfall variations (400mm to 1000mm) and see live profit shifts.</p>
-
-          <div class="simulator-box bg-blue-soft" style="margin-bottom: 20px; padding: 16px; border-radius: 8px;">
-            <div class="sim-header" style="margin-bottom: 12px;">
-              <span class="sim-label">Simulated Rainfall: <strong id="sim-rain-disp" class="text-blue" style="font-size: 1.2rem;">600 mm</strong></span>
-            </div>
-            <input type="range" id="sim-rain-slider" min="300" max="1200" value="600" step="25" oninput="onWhatIfSliderChange(this.value)" style="width: 100%;">
-            <div class="slider-ticks" style="margin-top: 6px;">
-              <span>300mm (Drought)</span>
-              <span>500mm</span>
-              <span>700mm (Optimal)</span>
-              <span>900mm (Heavy)</span>
-              <span>1200mm (Excess)</span>
-            </div>
-          </div>
-
-          <!-- Simulator Dynamic Results Comparison -->
-          <div id="whatif-impact-container" class="whatif-grid">
-            <!-- Dynamic comparison cards -->
-          </div>
-        </div>
-      </div>
-
-      <!-- TAB 4: DRAINMIND GIS (FLOOD RESILIENCE MAP) -->
-      <div id="agri-panel-drainmind" class="agri-panel">
-        <div class="map-wrapper" style="height: 600px; border-radius: 8px; overflow: hidden; position: relative;">
+        <!-- Route Options Cards -->
+        <div id="route-results-container" class="route-cards-container" style="display: none;">
+          <h3 class="section-heading">Available Options</h3>
           
-          <!-- Google Maps Style Place Search Bar -->
-          <div class="gmap-search-container">
-            <div class="gmap-search-box">
-              <i data-lucide="search" class="gmap-search-icon"></i>
-              <input type="text" id="gmap-search-input" placeholder="Search Roorkee & Haridwar locations..." oninput="onPlaceSearchInput(this.value)">
-              <button class="gmap-search-clear" onclick="clearPlaceSearch()">&times;</button>
+          <div id="card-fastest" class="route-option-card" onclick="selectRouteOption('fastest')">
+            <div class="route-card-header">
+              <span class="route-tag tag-fastest">⚡ Fastest</span>
+              <span id="fastest-time" class="route-time">22 mins</span>
             </div>
-            <div id="gmap-search-suggestions" class="gmap-suggestions-dropdown" style="display: none;"></div>
+            <div class="route-card-body">
+              <span id="fastest-dist" class="route-detail">14.5 km</span>
+              <span id="fastest-risk" class="risk-badge risk-high">Flood Risk: 82%</span>
+            </div>
           </div>
 
-          <div id="map" class="gis-map"></div>
+          <div id="card-safest" class="route-option-card selected" onclick="selectRouteOption('safest')">
+            <div class="route-card-header">
+              <span class="route-tag tag-safest">💧 Safest ⭐</span>
+              <span id="safest-time" class="route-time">28 mins</span>
+            </div>
+            <div class="route-card-body">
+              <span id="safest-dist" class="route-detail">16.2 km</span>
+              <span id="safest-risk" class="risk-badge risk-low">Flood Risk: 18%</span>
+            </div>
+          </div>
 
-          <button class="gmap-recenter-btn" title="Recenter to My GPS Location" onclick="locateUserGPS()">
-            <i data-lucide="crosshair"></i>
+          <div id="card-balanced" class="route-option-card" onclick="selectRouteOption('balanced')">
+            <div class="route-card-header">
+              <span class="route-tag tag-balanced">⚖️ Balanced</span>
+              <span id="balanced-time" class="route-time">24 mins</span>
+            </div>
+            <div class="route-card-body">
+              <span id="balanced-dist" class="route-detail">15.1 km</span>
+              <span id="balanced-risk" class="risk-badge risk-mod">Flood Risk: 32%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Turn Directions Card -->
+        <div id="step-directions-container" class="card panel-card card-directions" style="display: none;">
+          <div class="directions-header">
+            <h3 class="card-title"><i data-lucide="compass" class="icon-blue"></i> Step-by-Step Directions</h3>
+            <span id="eta-badge" class="eta-pill">ETA: 28 mins</span>
+          </div>
+          <ul id="step-directions-list" class="directions-list">
+            <!-- Dynamic Directions -->
+          </ul>
+        </div>
+
+        <!-- Citizen Incident Reporting Card -->
+        <div class="card panel-card card-report">
+          <div class="report-header">
+            <div>
+              <h3 class="card-title"><i data-lucide="alert-triangle" class="icon-brown"></i> Report Waterlogging</h3>
+              <p class="card-desc">Help real-time navigation by reporting flooded Assam roads.</p>
+            </div>
+            <button class="btn btn-outline-brown btn-sm" onclick="openReportModal()">Report</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🏛️ CITY / MUNICIPAL MODE CONTENT -->
+      <section id="panel-municipal" class="mode-panel">
+        
+        <div class="card panel-card">
+          <h2 class="card-title">
+            <i data-lucide="activity" class="icon-brown"></i> Critical Hotspot Wards
+          </h2>
+          <p class="card-desc">High risk areas needing priority Assam Disaster Management intervention.</p>
+          <div id="critical-zones-list" class="zones-scroll-list">
+            <!-- Dynamic Zone Items -->
+          </div>
+        </div>
+
+        <div class="card panel-card card-bottleneck">
+          <h2 class="card-title">
+            <i data-lucide="git-commit" class="icon-brown"></i> Drainage Bottleneck Inference
+          </h2>
+          <p class="card-desc">Brahmaputra River & Bharalu Channel degradation analysis.</p>
+
+          <div id="bottleneck-summary-box" class="bottleneck-box">
+            <div class="bottleneck-metric">
+              <span class="bm-label">Suspected Bottleneck</span>
+              <span id="bm-drain-id" class="bm-value text-brown">Bharalu Outfall D01</span>
+            </div>
+            <div class="bottleneck-metric">
+              <span class="bm-label">Confidence Score</span>
+              <span id="bm-score" class="bm-value text-brown">89% 🔴</span>
+            </div>
+            <p id="bm-rec" class="bm-note">Field desilting recommended for Bharalu River Outfall Channel.</p>
+          </div>
+        </div>
+
+        <div class="card panel-card card-optimizer">
+          <h2 class="card-title">
+            <i data-lucide="coins" class="icon-green"></i> Municipal Budget Optimizer
+          </h2>
+          <p class="card-desc">Maximize population protected under budget limits (OR-Tools).</p>
+          
+          <div class="form-group">
+            <label class="form-label" for="budget-range">Available Municipal Budget (₹ Lakhs)</label>
+            <div class="budget-input-group">
+              <input type="range" id="budget-range" min="1" max="25" value="10" step="0.5" oninput="updateBudgetVal(this.value)">
+              <span id="budget-val-disp" class="badge-budget">₹ 10 Lakhs</span>
+            </div>
+          </div>
+
+          <button class="btn btn-green" onclick="runOptimization()">
+            <i data-lucide="cpu"></i> Generate Action Plan
           </button>
 
-          <div class="basemap-switcher">
-            <button class="bm-btn active" onclick="switchBasemap('osm')">🗺️ OpenStreetMap</button>
-            <button class="bm-btn" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
-            <button class="bm-btn" onclick="switchBasemap('dark')">🌙 Dark GIS</button>
+          <div id="optimizer-results" class="optimizer-results-box" style="display: none;">
+            <div class="opt-impact-row">
+              <div class="opt-stat">
+                <span class="stat-num text-red" id="opt-before-risk">89%</span>
+                <span class="stat-lbl">Fancy Bazaar Risk Before</span>
+              </div>
+              <div class="opt-arrow">➔</div>
+              <div class="opt-stat">
+                <span class="stat-num text-green" id="opt-after-risk">25%</span>
+                <span class="stat-lbl">Simulated Risk After</span>
+              </div>
+            </div>
+
+            <div class="protected-pill">
+              <i data-lucide="users" class="icon-green"></i> <span id="opt-protected-pop">190,000</span> Citizens Protected
+            </div>
+
+            <h4 class="action-plan-title">RECOMMENDED ACTION PLAN</h4>
+            <ul id="action-plan-list" class="action-list">
+              <!-- Actions -->
+            </ul>
+
+            <button class="btn btn-outline-brown btn-sm" style="width: 100%; margin-top: 10px;" onclick="printOfficialActionPlan()">
+              <i data-lucide="file-text"></i> Export Official Action Plan (PDF)
+            </button>
           </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Map & Simulator Area -->
+    <section class="map-wrapper">
+      
+      <div class="gmap-search-container">
+        <div class="gmap-search-box">
+          <i data-lucide="search" class="gmap-search-icon"></i>
+          <input type="text" id="gmap-search-input" placeholder="Search Guwahati & Assam locations (e.g. Fancy Bazaar, Dispur)..." oninput="onPlaceSearchInput(this.value)">
+          <button class="gmap-search-clear" onclick="clearPlaceSearch()">&times;</button>
+        </div>
+        <div id="gmap-search-suggestions" class="gmap-suggestions-dropdown" style="display: none;"></div>
+      </div>
+
+      <div id="map" class="gis-map"></div>
+
+      <button class="gmap-recenter-btn" title="Recenter to My GPS Location" onclick="locateUserGPS()">
+        <i data-lucide="crosshair"></i>
+      </button>
+
+      <div class="basemap-switcher">
+        <button class="bm-btn active" onclick="switchBasemap('osm')">🗺️ OpenStreetMap</button>
+        <button class="bm-btn" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
+        <button class="bm-btn" onclick="switchBasemap('dark')">🌙 Dark GIS</button>
+      </div>
+
+      <div class="map-legend">
+        <div class="legend-title">Flood Risk Index</div>
+        <div class="legend-scale">
+          <span class="legend-item"><span class="color-box bg-green"></span> 0–30 Low</span>
+          <span class="legend-item"><span class="color-box bg-yellow"></span> 31–60 Mod</span>
+          <span class="legend-item"><span class="color-box bg-orange"></span> 61–80 High</span>
+          <span class="legend-item"><span class="color-box bg-red"></span> 81–100 Critical</span>
         </div>
       </div>
 
+      <div class="simulator-bar">
+        <div class="sim-header">
+          <span class="sim-label"><i data-lucide="sliders" class="icon-blue"></i> Monsoon Rainfall Simulator</span>
+          <span id="sim-rain-val" class="sim-val">100 mm</span>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="rainfall-slider" min="0" max="250" value="100" step="5" oninput="onRainfallSliderChange(this.value)">
+          <div class="slider-ticks">
+            <span>0mm (Dry)</span>
+            <span>50mm</span>
+            <span>100mm (Heavy)</span>
+            <span>150mm</span>
+            <span>200mm (Extreme)</span>
+            <span>250mm</span>
+          </div>
+        </div>
+      </div>
     </section>
   </main>
 
-  <!-- ML Model Metrics Modal -->
+  <!-- ML Model Performance Metrics Modal -->
   <div id="metrics-modal" class="modal-backdrop" onclick="closeMetricsModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" onclick="closeMetricsModal()">&times;</button>
       <div class="modal-header">
-        <span class="modal-tag">AGRITECH ML EVALUATION</span>
-        <h2 class="modal-title">🤖 CropPulse Multi-Model Architecture</h2>
-        <p class="modal-subtitle">Trained on 2,880 Agmarknet & OGD India agricultural ground-truth records</p>
+        <span class="modal-tag">PHASE 1 ML EVALUATION</span>
+        <h2 class="modal-title">🤖 Model Performance Metrics</h2>
+        <p id="modal-dataset-name" class="modal-subtitle">Northeast India (Assam & Meghalaya / Brahmaputra Basin) Dataset (1,680 records)</p>
       </div>
 
       <table class="metrics-table">
         <thead>
           <tr>
             <th>Model Architecture</th>
-            <th>Task</th>
-            <th>R² Score / Accuracy</th>
-            <th>MAE Error</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>ROC-AUC</th>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td><strong>HistGradientBoostingClassifier</strong></td>
-            <td>Crop Recommendation</td>
-            <td class="text-green"><strong>74.13% Accuracy</strong></td>
-            <td>Top 3 Ranking</td>
+            <td><strong>XGBoost / HistGB</strong></td>
+            <td class="text-green"><strong>100.0%</strong></td>
+            <td>100.0%</td>
+            <td>100.0%</td>
+            <td><strong>1.0000</strong></td>
           </tr>
           <tr>
-            <td><strong>HistGradientBoostingRegressor</strong></td>
-            <td>Crop Yield Prediction (q/acre)</td>
-            <td class="text-green"><strong>0.9639 (96.4%)</strong></td>
-            <td>7.64 q/acre</td>
-          </tr>
-          <tr>
-            <td><strong>RandomForestRegressor</strong></td>
-            <td>Mandi Price & Peak Window Forecast</td>
-            <td class="text-green"><strong>0.9935 (99.4%)</strong></td>
-            <td>₹ 87.96 / quintal</td>
+            <td>Random Forest</td>
+            <td>100.0%</td>
+            <td>100.0%</td>
+            <td>100.0%</td>
+            <td>1.0000</td>
           </tr>
         </tbody>
       </table>
 
-      <div class="modal-actions" style="margin-top: 16px;">
+      <div class="xai-container" style="margin-top: 14px;">
+        <h4 class="xai-title">Feature Importance Rankings</h4>
+        <p class="xai-desc">Top physical drivers computed from tree estimators</p>
+        <div class="xai-bars-list">
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>24h Rainfall (mm)</span><span>28.4% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 28.4%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>1h Intense Rain (mm/h)</span><span>21.2% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 21.2%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>Topographic Elevation (m)</span><span>14.5% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 14.5%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>Historical Flooding Count</span><span>8.2% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 8.2%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
         <button class="btn btn-outline" onclick="closeMetricsModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Zone Detail & Explainable AI (SHAP) Drawer Modal -->
+  <div id="zone-modal" class="modal-backdrop" onclick="closeZoneModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeZoneModal()">&times;</button>
+      <div class="modal-header">
+        <span id="modal-zone-id" class="modal-tag">ZONE-NE01</span>
+        <h2 id="modal-zone-name" class="modal-title">Fancy Bazaar / Panbazar</h2>
+        <p id="modal-ward-name" class="modal-subtitle">Ward 14 • Guwahati Municipal Corporation</p>
+      </div>
+
+      <div class="modal-metrics-grid">
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Flood Risk</span>
+          <span id="modal-risk-pct" class="mm-val text-red">89%</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Simulated Rainfall</span>
+          <span id="modal-rainfall-val" class="mm-val text-blue">100 mm</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Elevation</span>
+          <span id="modal-elev-val" class="mm-val text-brown">52 m</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Population</span>
+          <span id="modal-pop-val" class="mm-val">65,000</span>
+        </div>
+      </div>
+
+      <div class="xai-container">
+        <h3 class="xai-title">🔍 Explainable AI — Why is risk 89%?</h3>
+        <p class="xai-desc">XGBoost ML Feature Attribution (SHAP factors driving risk prediction)</p>
+        <div id="xai-bars" class="xai-bars-list">
+          <!-- SHAP Bars -->
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="setAsRouteOriginFromModal()">
+          <i data-lucide="navigation"></i> Route From Here
+        </button>
+        <button class="btn btn-outline" onclick="closeZoneModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Citizen Incident Report Modal -->
+  <div id="report-modal" class="modal-backdrop" onclick="closeReportModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+      <div class="modal-header">
+        <h2 class="modal-title">📍 Citizen Incident Report</h2>
+        <p class="modal-subtitle">Report active waterlogging to dynamically update navigation paths.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Road Location</label>
+        <select id="report-road-id" class="form-select">
+          <option value="R01">GS Road Highway Corridor (R01)</option>
+          <option value="R02">Brahmaputra River Bank Expressway (R02)</option>
+          <option value="R03">NH-27 Guwahati-Nagaon Corridor (R03)</option>
+          <option value="R04">Bharalu River Channel Bypass (R04)</option>
+          <option value="R05">Majuli Riverine Ferry Access (R05)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Water Level Depth</label>
+        <div class="radio-tiles">
+          <label class="tile"><input type="radio" name="water_depth" value="Low"> <span>🟢 Low (&lt;15cm)</span></label>
+          <label class="tile"><input type="radio" name="water_depth" value="Medium" checked> <span>🟡 Medium (15-30cm)</span></label>
+          <label class="tile"><input type="radio" name="water_depth" value="High"> <span>🔴 High (&gt;30cm)</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Is Road Passable by Car/Bike?</label>
+        <div class="radio-tiles">
+          <label class="tile"><input type="radio" name="passable" value="yes"> <span>YES (Passable)</span></label>
+          <label class="tile"><input type="radio" name="passable" value="no" checked> <span>NO (Impassable)</span></label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-brown" onclick="submitIncidentReport()">
+          <i data-lucide="send"></i> Submit Report
+        </button>
+        <button class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
       </div>
     </div>
   </div>
