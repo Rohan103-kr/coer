@@ -1,4 +1,4 @@
-// app.js - Main Application Entrypoint & State Orchestrator for Northeast India
+// app.js - Main Application Entrypoint & State Orchestrator for Northeast India & GSI Bhusanket LEWS
 
 let currentZonesGeoJSON = null;
 let isLiveWeatherActive = false;
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   await fetchZones(100);
   await fetchRoads(100);
   await fetchBottlenecks();
+  await fetchBhusanketWarning('guwahati', 100);
   
   // Calculate default route
   calculateRoute();
@@ -60,11 +61,32 @@ function switchMode(mode) {
   }
 }
 
-/* Northeast India Weather Station Selection Handler */
+/* Northeast India Weather & GSI Bhusanket Station Selection Handler */
 async function onStationChanged(stationKey) {
   activeStationKey = stationKey;
   if (isLiveWeatherActive) {
     await refreshLiveWeatherFeed(stationKey);
+  }
+  await fetchBhusanketWarning(stationKey, currentRainfallLevel);
+}
+
+async function fetchBhusanketWarning(stationKey = 'guwahati', rainfall = 100) {
+  try {
+    const resp = await fetch(`/api/bhusanket?station=${stationKey}&rainfall=${rainfall}`);
+    const data = await resp.json();
+
+    document.getElementById('bhusanket-station-name').innerText = data.station;
+    document.getElementById('bs-hazard-val').innerText = `${data.landslide_hazard_index}%`;
+    document.getElementById('bs-hazard-val').style.color = data.color;
+    document.getElementById('bs-sat-val').innerText = `${data.soil_saturation_pct}% (${data.slope_angle_deg}°)`;
+    
+    const warnEl = document.getElementById('bs-warning-level');
+    warnEl.innerText = `⚠️ ${data.warning_level}`;
+    warnEl.style.color = data.color;
+    
+    document.getElementById('bs-advisory-note').innerText = data.advisory_note;
+  } catch (err) {
+    console.error("Error fetching GSI Bhusanket warning:", err);
   }
 }
 
@@ -112,6 +134,7 @@ async function refreshLiveWeatherFeed(stationKey = 'guwahati') {
     await fetchZones(liveRainfall);
     await fetchRoads(liveRainfall);
     await fetchBottlenecks();
+    await fetchBhusanketWarning(stationKey, liveRainfall);
     if (currentRoutesData) {
       calculateRoute();
     }
@@ -128,6 +151,7 @@ async function onRainfallSliderChange(val) {
   await fetchZones(val);
   await fetchRoads(val);
   await fetchBottlenecks();
+  await fetchBhusanketWarning(activeStationKey, val);
   calculateRoute();
 }
 

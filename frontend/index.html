@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌧️ DrainMind AI | Northeast India Flood Resilience & Optimization</title>
-  <meta name="description" content="Predict → Explain → Route → Optimize urban flood risk and Brahmaputra River basin waterlogging for Northeast India (Assam & Meghalaya) with AI/ML, Open-Meteo Live Weather, GIS, and OR-Tools.">
+  <title>🌧️ DrainMind AI | Northeast India Flood & Landslide Resilience</title>
+  <meta name="description" content="Predict → Explain → Route → Optimize urban flood risk and GSI Bhusanket Landslide Early Warning System for Northeast India (Assam & Meghalaya) with AI/ML, Open-Meteo Live Weather, GIS, and OR-Tools.">
   
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -29,7 +29,7 @@
       </div>
       <div>
         <h1 class="brand-title">DrainMind <span class="badge-ai">AI</span></h1>
-        <p class="brand-subtitle">Northeast India (Assam & Meghalaya) Flood Resilience</p>
+        <p class="brand-subtitle">Northeast India Flood & GSI Bhusanket Landslide Resilience</p>
       </div>
     </div>
 
@@ -62,7 +62,7 @@
         <span id="current-rainfall-disp">Rainfall: 100 mm</span>
       </div>
       <div class="status-pill status-risk" id="city-risk-pill">
-        <i data-lucide="shield-alert" class="icon-brown"></i>
+        <i data-lucide="mountain" class="icon-brown"></i>
         <span id="city-avg-risk">Avg Risk: 48%</span>
       </div>
     </div>
@@ -74,17 +74,27 @@
     <!-- Sidebar Control Panel -->
     <aside class="sidebar-panel">
       
-      <!-- Simplified 4-Step How It Works Banner for Evaluators -->
-      <div class="card card-flow-banner">
-        <div class="flow-banner-title">💡 4-STEP AI RESILIENCE SYSTEM</div>
-        <div class="flow-steps-grid">
-          <div class="fs-item"><span>🌧️ 1. Rain</span></div>
-          <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>🧠 2. AI Risk</span></div>
-          <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>🚗 3. Safe Path</span></div>
-          <div class="fs-arrow">➔</div>
-          <div class="fs-item"><span>💰 4. City Plan</span></div>
+      <!-- GSI Bhusanket National Landslide Early Warning System Card -->
+      <div class="card card-live-banner bg-agri-amber" style="margin-bottom: 12px;">
+        <div class="live-banner-header">
+          <span class="badge-live" style="background:#78350f; color:#ffffff;">⛰️ GSI BHUSANKET (LEWS)</span>
+          <span id="bhusanket-station-name" style="font-size:0.75rem; font-weight:700; color:#78350f;">Guwahati Kamakhya Hill Slope</span>
+        </div>
+        <div class="live-metrics-grid" style="margin-top: 6px;">
+          <div class="lm-box">
+            <span class="lm-label">Landslide Hazard Index</span>
+            <span id="bs-hazard-val" class="lm-value text-red">68.5%</span>
+          </div>
+          <div class="lm-box">
+            <span class="lm-label">Soil Saturation / Slope</span>
+            <span id="bs-sat-val" class="lm-value">80.0% (34.5°)</span>
+          </div>
+        </div>
+        <div id="bs-warning-level" class="live-status-text" style="font-weight: 800; color: #dc2626; margin-top: 6px;">
+          ⚠️ ORANGE (HIGH LANDSLIDE RISK)
+        </div>
+        <div id="bs-advisory-note" class="live-time" style="color: #78350f; font-style: italic;">
+          Heavy rain causing soil saturation along hillside cuttings.
         </div>
       </div>
 
