@@ -33,13 +33,16 @@
       </div>
     </div>
 
-    <!-- Mode Switcher Tabs -->
+    <!-- Mode Switcher Tabs + Judge Demo Button -->
     <div class="mode-tabs">
       <button id="tab-citizen" class="tab-btn active" onclick="switchMode('citizen')">
         <i data-lucide="user-check"></i> Citizen Mode
       </button>
       <button id="tab-municipal" class="tab-btn" onclick="switchMode('municipal')">
         <i data-lucide="building-2"></i> Municipal Mode
+      </button>
+      <button class="btn-demo-tour" onclick="startJudgeTour()">
+        <i data-lucide="play-circle"></i> 1-Min Judge Tour
       </button>
     </div>
 
@@ -71,6 +74,20 @@
     <!-- Sidebar Control Panel -->
     <aside class="sidebar-panel">
       
+      <!-- Simplified 4-Step How It Works Banner for Evaluators -->
+      <div class="card card-flow-banner">
+        <div class="flow-banner-title">💡 4-STEP AI RESILIENCE SYSTEM</div>
+        <div class="flow-steps-grid">
+          <div class="fs-item"><span>🌧️ 1. Rain</span></div>
+          <div class="fs-arrow">➔</div>
+          <div class="fs-item"><span>🧠 2. AI Risk</span></div>
+          <div class="fs-arrow">➔</div>
+          <div class="fs-item"><span>🚗 3. Safe Path</span></div>
+          <div class="fs-arrow">➔</div>
+          <div class="fs-item"><span>💰 4. City Plan</span></div>
+        </div>
+      </div>
+
       <!-- Live Real-Time Banner (Shown when Live Weather mode is active) -->
       <div id="live-weather-card" class="card card-live-banner" style="display: none;">
         <div class="live-banner-header">
@@ -256,7 +273,6 @@
               <!-- Actions -->
             </ul>
 
-            <!-- Top 1% Export Action Plan PDF/Print Button -->
             <button class="btn btn-outline-brown btn-sm" style="width: 100%; margin-top: 10px;" onclick="printOfficialActionPlan()">
               <i data-lucide="file-text"></i> Export Official Action Plan (PDF)
             </button>
@@ -269,7 +285,7 @@
     <section class="map-wrapper">
       <div id="map" class="gis-map"></div>
 
-      <!-- Basemap Layer Switcher (Top 1% Feature) -->
+      <!-- Basemap Layer Switcher -->
       <div class="basemap-switcher">
         <button class="bm-btn active" onclick="switchBasemap('voyager')">🗺️ Light</button>
         <button class="bm-btn" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
@@ -308,7 +324,7 @@
     </section>
   </main>
 
-  <!-- ML Model Performance Metrics Modal (Top 1% Feature) -->
+  <!-- ML Model Performance Metrics Modal -->
   <div id="metrics-modal" class="modal-backdrop" onclick="closeMetricsModal(event)">
     <div class="modal-card" onclick="event.stopPropagation()">
       <button class="modal-close" onclick="closeMetricsModal()">&times;</button>
