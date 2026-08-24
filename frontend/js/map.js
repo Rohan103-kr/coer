@@ -7,6 +7,7 @@ let zonesLayer = null;
 let roadsLayer = null;
 let drainsLayer = null;
 let routePolylines = [];
+let routeMarkers = [];
 let incidentMarkers = [];
 let municipalHighlightLayer = null;
 let cityLabelMarkersGroup = null;
@@ -21,25 +22,20 @@ function initMap() {
     zoomControl: true
   });
 
-  // Standard OpenStreetMap Tiles with prominent city names, road labels, and landmarks
+  // OpenStreetMap Standard Tiles
   tileLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-  });
-
-  tileLayers.voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; CARTO &copy; OpenStreetMap'
+    attribution: '&copy; OpenStreetMap'
   });
 
   tileLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 18,
-    attribution: 'Esri &mdash; Source: Esri'
+    attribution: 'Esri'
   });
 
   tileLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '&copy; CARTO &copy; OpenStreetMap'
+    attribution: '&copy; CARTO'
   });
 
   currentTileLayer = tileLayers.osm;
@@ -59,7 +55,6 @@ function addCityNameLabels() {
     cityLabelMarkersGroup.clearLayers();
   }
 
-  // 1. ROORKEE CITY Permanent Label
   const roorkeeMarker = L.marker([29.8649, 77.8965], {
     icon: L.divIcon({
       className: 'city-name-badge badge-roorkee',
@@ -69,7 +64,6 @@ function addCityNameLabels() {
     })
   });
 
-  // 2. HARIDWAR CITY Permanent Label
   const haridwarMarker = L.marker([29.9560, 78.1700], {
     icon: L.divIcon({
       className: 'city-name-badge badge-haridwar',
@@ -112,10 +106,10 @@ function updateZonesMap(zonesGeoJSON) {
 
       return {
         fillColor: color,
-        weight: 1.8,
-        opacity: 0.9,
+        weight: 1.0,
+        opacity: 0.6,
         color: '#ffffff',
-        fillOpacity: 0.4
+        fillOpacity: 0.25 // Clean subtle fill opacity to declutter map
       };
     },
     onEachFeature: function (feature, layer) {
@@ -124,7 +118,7 @@ function updateZonesMap(zonesGeoJSON) {
       
       layer.on({
         mouseover: function (e) {
-          layer.setStyle({ fillOpacity: 0.7, weight: 3 });
+          layer.setStyle({ fillOpacity: 0.6, weight: 2 });
         },
         mouseout: function (e) {
           zonesLayer.resetStyle(layer);
@@ -152,18 +146,16 @@ function updateRoadsMap(roadsData) {
   const lines = [];
   roadsData.forEach(r => {
     const line = L.polyline([r.start_coords, r.end_coords], {
-      color: r.status_color || '#94a3b8',
-      weight: r.is_overridden ? 5 : 3,
-      opacity: 0.85,
+      color: r.status_color || '#cbd5e1',
+      weight: r.is_overridden ? 4 : 2,
+      opacity: 0.3, // Dim background roads so active route stands out sharply
       dashArray: r.is_overridden ? '6, 6' : null
     });
     
     line.bindPopup(`
       <div style="font-family: Inter;">
         <strong>${r.name} (${r.road_id})</strong><br/>
-        Length: ${r.length_km} km | Type: ${r.road_type}<br/>
-        Segment Risk: <strong style="color: ${r.status_color}">${r.flood_probability}%</strong>
-        ${r.is_overridden ? '<br/><span style="color: #dc2626; font-weight:700;">⚠️ Citizen Report Overridden</span>' : ''}
+        Length: ${r.length_km} km | Segment Risk: <strong style="color: ${r.status_color}">${r.flood_probability}%</strong>
       </div>
     `);
     lines.push(line);
@@ -185,17 +177,15 @@ function updateDrainsMap(drainsData) {
     
     const poly = L.polyline(d.coords, {
       color: color,
-      weight: score >= 70 ? 5 : 3,
-      opacity: 0.9,
-      dashArray: score >= 70 ? '8, 8' : null
+      weight: score >= 70 ? 4 : 2,
+      opacity: 0.7,
+      dashArray: score >= 70 ? '6, 6' : null
     });
 
     poly.bindPopup(`
       <div style="font-family: Inter; padding: 4px;">
         <strong style="color: ${color};">🌊 SWD Drain ${d.drain_id}: ${d.drain_name}</strong><br/>
-        Ward: ${d.ward} | Capacity: ${d.design_capacity_m3s} m³/s<br/>
-        Bottleneck Confidence: <strong>${d.confidence}</strong><br/>
-        Recommendation: <em>${d.recommendation}</em>
+        Ward: ${d.ward} | Bottleneck Confidence: <strong>${d.confidence}</strong>
       </div>
     `);
 
@@ -203,6 +193,58 @@ function updateDrainsMap(drainsData) {
   });
 
   drainsLayer = L.layerGroup(drainLines).addTo(map);
+}
+
+// Clean Focused Route Drawing for Selected Locations Only
+function drawRouteOnMap(routeData, modeColor = '#0284c7') {
+  clearRouteLines();
+  if (!routeData || !routeData.coordinates || routeData.coordinates.length === 0) return;
+
+  // 1. Draw bold glowing active route polyline
+  const polyline = L.polyline(routeData.coordinates, {
+    color: modeColor,
+    weight: 7,
+    opacity: 0.95,
+    lineCap: 'round',
+    lineJoin: 'round'
+  }).addTo(map);
+
+  routePolylines.push(polyline);
+
+  // 2. Add Start Marker (Origin) & End Marker (Destination)
+  const startCoords = routeData.coordinates[0];
+  const endCoords = routeData.coordinates[routeData.coordinates.length - 1];
+
+  const startMarker = L.marker(startCoords, {
+    icon: L.divIcon({
+      className: 'route-node-pin pin-start',
+      html: '🟢 START',
+      iconSize: [80, 24],
+      iconAnchor: [40, 12]
+    })
+  }).addTo(map);
+
+  const endMarker = L.marker(endCoords, {
+    icon: L.divIcon({
+      className: 'route-node-pin pin-end',
+      html: '🏁 END',
+      iconSize: [70, 24],
+      iconAnchor: [35, 12]
+    })
+  }).addTo(map);
+
+  routeMarkers.push(startMarker);
+  routeMarkers.push(endMarker);
+
+  // 3. Zoom & fit map viewport tightly around selected route only
+  map.fitBounds(polyline.getBounds(), { padding: [50, 50] });
+}
+
+function clearRouteLines() {
+  routePolylines.forEach(l => map.removeLayer(l));
+  routePolylines = [];
+  routeMarkers.forEach(m => map.removeLayer(m));
+  routeMarkers = [];
 }
 
 function focusZoneOnMap(zoneId) {
@@ -274,27 +316,6 @@ function focusBottleneckDrain(drainId) {
       </div>
     `).openPopup();
   }
-}
-
-function drawRouteOnMap(routeData, modeColor = '#0284c7') {
-  clearRouteLines();
-  if (!routeData || !routeData.coordinates || routeData.coordinates.length === 0) return;
-
-  const polyline = L.polyline(routeData.coordinates, {
-    color: modeColor,
-    weight: 6,
-    opacity: 0.9,
-    lineCap: 'round',
-    lineJoin: 'round'
-  }).addTo(map);
-
-  routePolylines.push(polyline);
-  map.fitBounds(polyline.getBounds(), { padding: [40, 40] });
-}
-
-function clearRouteLines() {
-  routePolylines.forEach(l => map.removeLayer(l));
-  routePolylines = [];
 }
 
 function clearMunicipalHighlights() {

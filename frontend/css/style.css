@@ -1155,6 +1155,34 @@ body {
   border: 2px solid var(--brown-amber);
 }
 
+/* Route Origin & Destination Node Pins */
+.route-node-pin {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.pin-start {
+  background: #16a34a;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+.pin-end {
+  background: #dc2626;
+  color: #ffffff;
+  border: 2px solid #ffffff;
+}
+
+
 
 
 
