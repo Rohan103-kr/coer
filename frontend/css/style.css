@@ -1182,6 +1182,151 @@ body {
   border: 2px solid #ffffff;
 }
 
+/* Google Maps Floating Place Search Bar */
+.gmap-search-container {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 340px;
+  z-index: 850;
+}
+
+.gmap-search-box {
+  display: flex;
+  align-items: center;
+  background: #ffffff;
+  border-radius: 24px;
+  padding: 6px 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+  border: 1px solid var(--border-color);
+}
+
+.gmap-search-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--text-muted);
+  margin-right: 8px;
+}
+
+#gmap-search-input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  font-size: 0.82rem;
+  color: var(--text-main);
+  background: transparent;
+}
+
+.gmap-search-clear {
+  border: none;
+  background: transparent;
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.gmap-suggestions-dropdown {
+  background: #ffffff;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  margin-top: 6px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.gmap-sug-item {
+  padding: 8px 14px;
+  font-size: 0.8rem;
+  color: var(--text-main);
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.gmap-sug-item:hover {
+  background: var(--blue-soft);
+  color: var(--blue-dark);
+}
+
+/* Google Maps Floating Recenter Crosshair Button */
+.gmap-recenter-btn {
+  position: absolute;
+  bottom: 90px;
+  right: 16px;
+  width: 42px;
+  height: 42px;
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  cursor: pointer;
+  z-index: 800;
+  color: var(--blue-primary);
+  transition: all 0.2s ease;
+}
+
+.gmap-recenter-btn:hover {
+  background: var(--blue-soft);
+  transform: scale(1.05);
+}
+
+/* Google Maps Turn Directions Card */
+.card-directions {
+  margin-top: 10px;
+}
+
+.directions-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.eta-pill {
+  background: var(--green-soft);
+  color: var(--green-primary);
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.directions-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.dir-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 0.78rem;
+  color: var(--text-main);
+}
+
+.dir-icon {
+  font-size: 1rem;
+}
+
+.dir-dist {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+
 
 
 

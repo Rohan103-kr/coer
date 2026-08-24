@@ -88,7 +88,7 @@
         </div>
       </div>
 
-      <!-- Live Real-Time Banner (Shown when Live Weather mode is active) -->
+      <!-- Live Real-Time Banner -->
       <div id="live-weather-card" class="card card-live-banner" style="display: none;">
         <div class="live-banner-header">
           <span class="badge-live"><span class="live-dot"></span> LIVE UTTARAKHAND METEO FEED</span>
@@ -198,6 +198,17 @@
           </div>
         </div>
 
+        <!-- Google Maps Style Step-by-Step Turn Directions Card -->
+        <div id="step-directions-container" class="card panel-card card-directions" style="display: none;">
+          <div class="directions-header">
+            <h3 class="card-title"><i data-lucide="compass" class="icon-blue"></i> Step-by-Step Directions</h3>
+            <span id="eta-badge" class="eta-pill">ETA: 38 mins</span>
+          </div>
+          <ul id="step-directions-list" class="directions-list">
+            <!-- Dynamic Turn Directions -->
+          </ul>
+        </div>
+
         <!-- Citizen Incident Reporting Card -->
         <div class="card panel-card card-report">
           <div class="report-header">
@@ -296,7 +307,25 @@
 
     <!-- Map & Simulator Area -->
     <section class="map-wrapper">
+      
+      <!-- Google Maps Style Place Search Bar -->
+      <div class="gmap-search-container">
+        <div class="gmap-search-box">
+          <i data-lucide="search" class="gmap-search-icon"></i>
+          <input type="text" id="gmap-search-input" placeholder="Search Roorkee & Haridwar locations (e.g. Civil Lines, Har Ki Pauri)..." oninput="onPlaceSearchInput(this.value)">
+          <button class="gmap-search-clear" onclick="clearPlaceSearch()">&times;</button>
+        </div>
+        <div id="gmap-search-suggestions" class="gmap-suggestions-dropdown" style="display: none;">
+          <!-- Autocomplete items -->
+        </div>
+      </div>
+
       <div id="map" class="gis-map"></div>
+
+      <!-- Google Maps Style Floating Recenter Button -->
+      <button class="gmap-recenter-btn" title="Recenter to My GPS Location" onclick="locateUserGPS()">
+        <i data-lucide="crosshair"></i>
+      </button>
 
       <!-- Basemap Layer Switcher -->
       <div class="basemap-switcher">

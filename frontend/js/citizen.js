@@ -1,9 +1,67 @@
-// citizen.js - Citizen Mode Navigation & Incident Reporting
+// citizen.js - Citizen Mode Navigation, Turn-by-Turn Directions & Incident Reporting
 
 let currentRoutesData = null;
 let selectedRouteKey = 'safest';
 let userGpsCoords = null;
 let userGpsMarker = null;
+
+const PLACE_DATABASE = [
+  { name: "IIT Roorkee Main Campus", zone_id: "ZONE-RK01", node_id: "N_IIT_ROORKEE", lat: 29.8649, lng: 77.8965 },
+  { name: "Civil Lines Roorkee", zone_id: "ZONE-RK02", node_id: "N_CIVIL_LINES", lat: 29.8690, lng: 77.8920 },
+  { name: "Solani River Aqueduct", zone_id: "ZONE-RK03", node_id: "N_SOLANI_AQUEDUCT", lat: 29.8780, lng: 77.9100 },
+  { name: "Ganeshpur / Roorkee Station", zone_id: "ZONE-RK04", node_id: "N_IIT_ROORKEE", lat: 29.8620, lng: 77.8880 },
+  { name: "Har Ki Pauri Ghats (Haridwar)", zone_id: "ZONE-HW01", node_id: "N_HAR_KI_PAURI", lat: 29.9560, lng: 78.1700 },
+  { name: "Jwalapur Market & Bazaar", zone_id: "ZONE-HW02", node_id: "N_JWALAPUR", lat: 29.9280, lng: 78.1150 },
+  { name: "BHEL Ranipur Township", zone_id: "ZONE-HW03", node_id: "N_BHEL_RANIPUR", lat: 29.9150, lng: 78.0780 },
+  { name: "Kankhal Heritage Temple Zone", zone_id: "ZONE-HW04", node_id: "N_KANKHAL", lat: 29.9320, lng: 78.1400 },
+  { name: "Bahadrabad Canal Junction", zone_id: "ZONE-HW05", node_id: "N_BAHADRABAD", lat: 29.9050, lng: 78.0350 }
+];
+
+function onPlaceSearchInput(query) {
+  const dropdown = document.getElementById('gmap-search-suggestions');
+  if (!query || query.trim().length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  const matches = PLACE_DATABASE.filter(p => p.name.toLowerCase().includes(query.toLowerCase()));
+  if (matches.length === 0) {
+    dropdown.style.display = 'none';
+    return;
+  }
+
+  dropdown.innerHTML = '';
+  matches.forEach(place => {
+    const item = document.createElement('div');
+    item.className = 'gmap-sug-item';
+    item.innerHTML = `📍 <strong>${place.name}</strong>`;
+    item.onclick = () => {
+      selectSearchedPlace(place);
+    };
+    dropdown.appendChild(item);
+  });
+  dropdown.style.display = 'block';
+}
+
+function selectSearchedPlace(place) {
+  document.getElementById('gmap-search-input').value = place.name;
+  document.getElementById('gmap-search-suggestions').style.display = 'none';
+  
+  // Set as Destination
+  const destSelect = document.getElementById('route-dest');
+  destSelect.value = place.node_id;
+  
+  if (map) {
+    map.flyTo([place.lat, place.lng], 14, { duration: 1.2 });
+  }
+
+  calculateRoute();
+}
+
+function clearPlaceSearch() {
+  document.getElementById('gmap-search-input').value = '';
+  document.getElementById('gmap-search-suggestions').style.display = 'none';
+}
 
 function locateUserGPS() {
   if ('geolocation' in navigator) {
@@ -14,18 +72,15 @@ function locateUserGPS() {
         const lng = position.coords.longitude;
         userGpsCoords = [lat, lng];
 
-        // Update Origin Select
         const originSelect = document.getElementById('route-origin');
         originSelect.value = 'USER_LIVE_GPS';
 
-        // Add GPS Marker on map & fly to it
         addUserGpsMarker(lat, lng);
         speakAlert("GPS location locked. Calculating flood-free routes from your position.");
         calculateRoute();
       },
       (error) => {
         console.warn("GPS Geolocation warning (using Roorkee baseline):", error.message);
-        // Fallback to Roorkee GPS (IIT Roorkee Campus: 29.8649, 77.8965)
         userGpsCoords = [29.8649, 77.8965];
         const originSelect = document.getElementById('route-origin');
         originSelect.value = 'USER_LIVE_GPS';
@@ -69,6 +124,7 @@ function addUserGpsMarker(lat, lng) {
 function onRouteInputsChanged() {
   clearRouteLines();
   document.getElementById('route-results-container').style.display = 'none';
+  document.getElementById('step-directions-container').style.display = 'none';
 }
 
 async function calculateRoute() {
@@ -145,6 +201,7 @@ function selectRouteOption(modeKey) {
     else if (modeKey === 'balanced') color = '#0284c7';
     
     drawRouteOnMap(route, color);
+    renderStepDirections(route);
     
     if (modeKey === 'safest') {
       speakAlert(`Safest route selected. Travel time is ${route.travel_time_min} minutes with low flood risk.`);
@@ -152,6 +209,56 @@ function selectRouteOption(modeKey) {
       speakAlert(`Warning: Fastest route has high waterlogging risk of ${route.avg_flood_risk} percent.`);
     }
   }
+}
+
+/* Render Google Maps Style Step-by-Step Directions */
+function renderStepDirections(route) {
+  const container = document.getElementById('step-directions-container');
+  const list = document.getElementById('step-directions-list');
+  document.getElementById('eta-badge').innerText = `ETA: ${route.travel_time_min} mins (${route.length_km} km)`;
+
+  list.innerHTML = '';
+  container.style.display = 'block';
+
+  if (!route.edges || route.edges.length === 0) return;
+
+  // Step 1: Start
+  const startLi = document.createElement('li');
+  startLi.className = 'dir-step-item';
+  startLi.innerHTML = `
+    <span class="dir-icon">🟢</span>
+    <div>
+      <div><strong>Start Journey</strong> at ${document.getElementById('route-origin').selectedOptions[0].text}</div>
+    </div>
+  `;
+  list.appendChild(startLi);
+
+  // Step 2..N: Intermediate roads
+  route.edges.forEach((e, idx) => {
+    const li = document.createElement('li');
+    li.className = 'dir-step-item';
+    const isRisky = e.flood_probability > 60;
+    
+    li.innerHTML = `
+      <span class="dir-icon">${idx % 2 === 0 ? '🚗' : '↗️'}</span>
+      <div>
+        <div>Drive along <strong>${e.name}</strong></div>
+        <div class="dir-dist">Segment Risk: <strong style="color:${isRisky ? '#dc2626' : '#16a34a'}">${e.flood_probability}%</strong> ${isRisky ? '⚠️ (Waterlogging Warning)' : '✅ (Clear Road)'}</div>
+      </div>
+    `;
+    list.appendChild(li);
+  });
+
+  // Step End: Destination
+  const endLi = document.createElement('li');
+  endLi.className = 'dir-step-item';
+  endLi.innerHTML = `
+    <span class="dir-icon">🏁</span>
+    <div>
+      <div><strong>Arrive</strong> at ${document.getElementById('route-dest').selectedOptions[0].text}</div>
+    </div>
+  `;
+  list.appendChild(endLi);
 }
 
 function getRiskClass(riskVal) {
