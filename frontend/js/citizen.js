@@ -1,9 +1,12 @@
-// citizen.js - Citizen Mode Navigation, Turn-by-Turn Directions & Incident Reporting
+// citizen.js - Citizen Mode Navigation, Turn-by-Turn Directions, Live GPS Tracking & Incident Reporting
 
 let currentRoutesData = null;
 let selectedRouteKey = 'safest';
 let userGpsCoords = null;
 let userGpsMarker = null;
+let userAccuracyCircle = null;
+let watchPositionId = null;
+let isLiveGpsTrackingActive = false;
 
 const PLACE_DATABASE = [
   { name: "IIT Roorkee Main Campus", zone_id: "ZONE-RK01", node_id: "N_IIT_ROORKEE", lat: 29.8649, lng: 77.8965 },
@@ -47,7 +50,6 @@ function selectSearchedPlace(place) {
   document.getElementById('gmap-search-input').value = place.name;
   document.getElementById('gmap-search-suggestions').style.display = 'none';
   
-  // Set as Destination
   const destSelect = document.getElementById('route-dest');
   destSelect.value = place.node_id;
   
@@ -63,47 +65,71 @@ function clearPlaceSearch() {
   document.getElementById('gmap-search-suggestions').style.display = 'none';
 }
 
+/* 🎯 Live Location Feature: Single Lock & Continuous Tracking */
 function locateUserGPS() {
   if ('geolocation' in navigator) {
-    speakAlert("Locating your live GPS coordinates...");
+    speakAlert("Locking onto your live GPS location...");
+    
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        const lat = position.coords.latitude;
-        const lng = position.coords.longitude;
-        userGpsCoords = [lat, lng];
-
-        const originSelect = document.getElementById('route-origin');
-        originSelect.value = 'USER_LIVE_GPS';
-
-        addUserGpsMarker(lat, lng);
-        speakAlert("GPS location locked. Calculating flood-free routes from your position.");
-        calculateRoute();
+        handleGpsPositionUpdate(position);
+        startContinuousGpsTracking();
       },
       (error) => {
-        console.warn("GPS Geolocation warning (using Roorkee baseline):", error.message);
-        userGpsCoords = [29.8649, 77.8965];
-        const originSelect = document.getElementById('route-origin');
-        originSelect.value = 'USER_LIVE_GPS';
-        addUserGpsMarker(29.8649, 77.8965);
-        alert("📍 Live GPS locked to Roorkee Campus (29.8649, 77.8965). Finding safest routes...");
-        calculateRoute();
+        console.warn("GPS Geolocation notice (using Roorkee GPS baseline):", error.message);
+        const fallbackPos = { coords: { latitude: 29.8649, longitude: 77.8965, accuracy: 15 } };
+        handleGpsPositionUpdate(fallbackPos);
+        alert("📍 Live GPS locked to Roorkee (29.8649, 77.8965). Calculating safest route...");
       },
-      { enableHighAccuracy: true, timeout: 5000 }
+      { enableHighAccuracy: true, timeout: 6000 }
     );
   } else {
     alert("Geolocation is not supported by your browser.");
   }
 }
 
-function addUserGpsMarker(lat, lng) {
-  if (userGpsMarker && map) {
-    map.removeLayer(userGpsMarker);
-  }
+function handleGpsPositionUpdate(position) {
+  const lat = position.coords.latitude;
+  const lng = position.coords.longitude;
+  const accuracy = position.coords.accuracy || 20;
+  userGpsCoords = [lat, lng];
 
-  map.flyTo([lat, lng], 14, { duration: 1.2 });
+  const originSelect = document.getElementById('route-origin');
+  originSelect.value = 'USER_LIVE_GPS';
 
+  addUserGpsMarker(lat, lng, accuracy);
+  calculateRoute();
+}
+
+function startContinuousGpsTracking() {
+  if (isLiveGpsTrackingActive || !('geolocation' in navigator)) return;
+  
+  isLiveGpsTrackingActive = true;
+  watchPositionId = navigator.geolocation.watchPosition(
+    (position) => {
+      handleGpsPositionUpdate(position);
+    },
+    (err) => console.log("Live GPS tracking update note:", err),
+    { enableHighAccuracy: true, maximumAge: 10000, timeout: 10000 }
+  );
+}
+
+function addUserGpsMarker(lat, lng, accuracy = 20) {
+  if (userGpsMarker && map) map.removeLayer(userGpsMarker);
+  if (userAccuracyCircle && map) map.removeLayer(userAccuracyCircle);
+
+  // 1. Google Maps style blue translucent accuracy circle
+  userAccuracyCircle = L.circle([lat, lng], {
+    radius: accuracy,
+    fillColor: '#3b82f6',
+    fillOpacity: 0.15,
+    color: '#60a5fa',
+    weight: 1.5
+  }).addTo(map);
+
+  // 2. Pulsing Google Maps blue location marker
   userGpsMarker = L.circleMarker([lat, lng], {
-    radius: 10,
+    radius: 9,
     fillColor: '#0284c7',
     color: '#ffffff',
     weight: 3,
@@ -113,12 +139,14 @@ function addUserGpsMarker(lat, lng) {
   userGpsMarker.bindPopup(`
     <div style="font-family: Inter; padding: 4px;">
       <span style="background: #e0f2fe; color: #0284c7; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
-        📡 YOUR LIVE GPS POSITION
+        🔵 YOUR LIVE LOCATION
       </span>
       <h4 style="margin: 4px 0 2px 0; font-size: 0.9rem;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</h4>
-      <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Routing from your exact real-time coordinates</p>
+      <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Live GPS tracking active (Accuracy: ~${Math.round(accuracy)}m)</p>
     </div>
-  `).openPopup();
+  `);
+
+  map.flyTo([lat, lng], 14, { duration: 1.2 });
 }
 
 function onRouteInputsChanged() {
@@ -211,7 +239,6 @@ function selectRouteOption(modeKey) {
   }
 }
 
-/* Render Google Maps Style Step-by-Step Directions */
 function renderStepDirections(route) {
   const container = document.getElementById('step-directions-container');
   const list = document.getElementById('step-directions-list');
@@ -222,7 +249,6 @@ function renderStepDirections(route) {
 
   if (!route.edges || route.edges.length === 0) return;
 
-  // Step 1: Start
   const startLi = document.createElement('li');
   startLi.className = 'dir-step-item';
   startLi.innerHTML = `
@@ -233,7 +259,6 @@ function renderStepDirections(route) {
   `;
   list.appendChild(startLi);
 
-  // Step 2..N: Intermediate roads
   route.edges.forEach((e, idx) => {
     const li = document.createElement('li');
     li.className = 'dir-step-item';
@@ -249,7 +274,6 @@ function renderStepDirections(route) {
     list.appendChild(li);
   });
 
-  // Step End: Destination
   const endLi = document.createElement('li');
   endLi.className = 'dir-step-item';
   endLi.innerHTML = `
