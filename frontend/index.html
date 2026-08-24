@@ -54,7 +54,7 @@
 
       <button id="live-weather-btn" class="btn-live-toggle" onclick="toggleLiveWeatherMode()">
         <span class="live-dot pulse"></span>
-        <span id="live-mode-label">LIVE WEATHER (Roorkee/Haridwar)</span>
+        <span id="live-mode-label">LIVE WEATHER (Uttarakhand)</span>
       </button>
 
       <div class="status-pill status-rainfall">
@@ -91,8 +91,14 @@
       <!-- Live Real-Time Banner (Shown when Live Weather mode is active) -->
       <div id="live-weather-card" class="card card-live-banner" style="display: none;">
         <div class="live-banner-header">
-          <span class="badge-live"><span class="live-dot"></span> LIVE METEO FEED</span>
-          <span id="live-station-time" class="live-time">Roorkee-Haridwar Station • Just now</span>
+          <span class="badge-live"><span class="live-dot"></span> LIVE UTTARAKHAND METEO FEED</span>
+          <select id="uk-station-select" class="form-select-sm" onchange="onStationChanged(this.value)">
+            <option value="roorkee">📍 Roorkee & Haridwar</option>
+            <option value="dehradun">📍 Dehradun (Capital)</option>
+            <option value="rishikesh">📍 Rishikesh (Ganges)</option>
+            <option value="nainital">📍 Nainital (Kumaon)</option>
+            <option value="chamoli">📍 Chamoli (Garhwal)</option>
+          </select>
         </div>
         <div class="live-metrics-grid">
           <div class="lm-box">
@@ -107,6 +113,7 @@
         <div class="live-status-text" id="live-weather-desc">
           Condition: Light Rain / Canal Moisture
         </div>
+        <div id="live-station-time" class="live-time" style="margin-top: 4px;">Station • Just now</div>
       </div>
       
       <!-- 👤 CITIZEN MODE CONTENT -->

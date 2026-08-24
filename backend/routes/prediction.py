@@ -16,12 +16,12 @@ class PredictRequest(BaseModel):
     historical_flood_frequency: float = 12.0
 
 @router.get("/live-weather")
-def get_live_weather():
-    return live_weather_service.fetch_live_weather()
+def get_live_weather(station: str = Query("roorkee", description="Uttarakhand Weather Station Key")):
+    return live_weather_service.fetch_live_weather(station)
 
 @router.get("/live-zones")
-def get_live_zones():
-    weather = live_weather_service.fetch_live_weather()
+def get_live_zones(station: str = Query("roorkee", description="Uttarakhand Weather Station Key")):
+    weather = live_weather_service.fetch_live_weather(station)
     rainfall_24h = weather["rainfall_24h_mm"]
     zones_geojson = gis_service.get_evaluated_zones(rainfall_24h)
     return {
@@ -38,9 +38,9 @@ def get_model_metrics():
     risk_engine.load_model()
     return {
         "metrics": risk_engine.metrics,
-        "active_model": "XGBoost Classifier (OpenCity Dataset)",
+        "active_model": "XGBoost Classifier",
         "baseline_model": "Random Forest Classifier",
-        "dataset": risk_engine.model_data.get("dataset_name", "OpenCity Chennai Flooding Dataset"),
+        "dataset": risk_engine.model_data.get("dataset_name", "Roorkee & Haridwar (Uttarakhand) Hydro-Meteorological Dataset"),
         "feature_importances": risk_engine.model_data.get("feature_importances", {})
     }
 

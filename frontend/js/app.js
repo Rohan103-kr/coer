@@ -3,6 +3,7 @@
 let currentZonesGeoJSON = null;
 let isLiveWeatherActive = false;
 let liveWeatherInterval = null;
+let activeStationKey = 'roorkee';
 
 document.addEventListener('DOMContentLoaded', async () => {
   // 1. Initialize Lucide icons
@@ -46,7 +47,6 @@ function switchMode(mode) {
     
     clearRouteLines();
     
-    // Focus top critical ward on entering Municipal Mode
     if (currentZonesGeoJSON && currentZonesGeoJSON.features && currentZonesGeoJSON.features.length > 0) {
       const topCritical = [...currentZonesGeoJSON.features].sort((a, b) => b.properties.flood_probability - a.properties.flood_probability)[0];
       if (topCritical) {
@@ -54,58 +54,15 @@ function switchMode(mode) {
       }
     }
     
-    // Pre-run optimization on tab switch
     runOptimization();
   }
 }
 
-/* 🏆 Automated 1-Minute Judge Demo Tour */
-async function startJudgeTour() {
-  speakAlert("Starting 1-Minute Live Demo Tour for Hackathon Evaluators.");
-  
-  // Step 1: Citizen Mode & Rainfall Simulator
-  switchMode('citizen');
-  document.getElementById('rainfall-slider').value = 150;
-  onRainfallSliderChange(150);
-  
-  setTimeout(async () => {
-    // Step 2: Calculate Route
-    await calculateRoute();
-    selectRouteOption('safest');
-    
-    setTimeout(() => {
-      // Step 3: Inspect SHAP XAI Modal
-      if (currentZonesGeoJSON && currentZonesGeoJSON.features && currentZonesGeoJSON.features[0]) {
-        openZoneModal(currentZonesGeoJSON.features[0].properties);
-      }
-      
-      setTimeout(() => {
-        closeZoneModal();
-        // Step 4: Municipal Mode & Budget Optimizer
-        switchMode('municipal');
-        runOptimization();
-        speakAlert("Demo tour completed. Solani Aqueduct risk reduced to 25% with 190,000 citizens protected.");
-      }, 4000);
-    }, 4000);
-  }, 2000);
-}
-
-/* ML Model Performance Metrics Modal */
-function openMetricsModal() {
-  document.getElementById('metrics-modal').classList.add('active');
-}
-
-function closeMetricsModal(e) {
-  document.getElementById('metrics-modal').classList.remove('active');
-}
-
-/* Voice Text-to-Speech Alert Helper */
-function speakAlert(text) {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    window.speechSynthesis.speak(utterance);
+/* Uttarakhand Weather Station Selection Handler */
+async function onStationChanged(stationKey) {
+  activeStationKey = stationKey;
+  if (isLiveWeatherActive) {
+    await refreshLiveWeatherFeed(stationKey);
   }
 }
 
@@ -122,34 +79,30 @@ async function toggleLiveWeatherMode() {
     liveBanner.style.display = 'block';
     liveLabel.innerText = "LIVE WEATHER: ACTIVE";
     
-    // Fetch live weather immediately
-    await refreshLiveWeatherFeed();
+    await refreshLiveWeatherFeed(activeStationKey);
 
-    // Set polling interval every 60 seconds
-    liveWeatherInterval = setInterval(refreshLiveWeatherFeed, 60000);
+    liveWeatherInterval = setInterval(() => refreshLiveWeatherFeed(activeStationKey), 60000);
   } else {
     liveBtn.classList.remove('active');
     liveBanner.style.display = 'none';
-    liveLabel.innerText = "LIVE WEATHER (Roorkee/Haridwar)";
+    liveLabel.innerText = "LIVE WEATHER (Uttarakhand)";
     
     if (liveWeatherInterval) clearInterval(liveWeatherInterval);
     
-    // Restore simulator rainfall value
     onRainfallSliderChange(document.getElementById('rainfall-slider').value);
   }
 }
 
-async function refreshLiveWeatherFeed() {
+async function refreshLiveWeatherFeed(stationKey = 'roorkee') {
   try {
-    const resp = await fetch('/api/live-weather');
+    const resp = await fetch(`/api/live-weather?station=${stationKey}`);
     const weather = await resp.json();
 
     document.getElementById('live-rf-val').innerText = `${weather.rainfall_24h_mm} mm (24h)`;
     document.getElementById('live-temp-val').innerText = `${weather.temperature_c}°C (${weather.humidity_pct}%)`;
     document.getElementById('live-weather-desc').innerText = `Condition: ${weather.weather_description} • Wind: ${weather.wind_speed_kmh} km/h`;
-    document.getElementById('live-station-time').innerText = `Roorkee-Haridwar Station • ${weather.timestamp.split('T')[1] || 'Just now'}`;
+    document.getElementById('live-station-time').innerText = `${weather.location_name} Station • ${weather.timestamp.split('T')[1] || 'Just now'}`;
 
-    // Update risk prediction with live rainfall value
     const liveRainfall = weather.rainfall_24h_mm;
     document.getElementById('sim-rain-val').innerText = `${liveRainfall} mm (LIVE)`;
     document.getElementById('current-rainfall-disp').innerText = `Live Rain: ${liveRainfall} mm`;
@@ -165,18 +118,57 @@ async function refreshLiveWeatherFeed() {
   }
 }
 
+async function startJudgeTour() {
+  speakAlert("Starting 1-Minute Live Demo Tour for Hackathon Evaluators.");
+  
+  switchMode('citizen');
+  document.getElementById('rainfall-slider').value = 150;
+  onRainfallSliderChange(150);
+  
+  setTimeout(async () => {
+    await calculateRoute();
+    selectRouteOption('safest');
+    
+    setTimeout(() => {
+      if (currentZonesGeoJSON && currentZonesGeoJSON.features && currentZonesGeoJSON.features[0]) {
+        openZoneModal(currentZonesGeoJSON.features[0].properties);
+      }
+      
+      setTimeout(() => {
+        closeZoneModal();
+        switchMode('municipal');
+        runOptimization();
+        speakAlert("Demo tour completed. Solani Aqueduct risk reduced to 25% with 190,000 citizens protected.");
+      }, 4000);
+    }, 4000);
+  }, 2000);
+}
+
+function openMetricsModal() {
+  document.getElementById('metrics-modal').classList.add('active');
+}
+
+function closeMetricsModal(e) {
+  document.getElementById('metrics-modal').classList.remove('active');
+}
+
+function speakAlert(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
 async function fetchZones(rainfall = 100) {
   try {
     const resp = await fetch(`/api/zones?rainfall=${rainfall}`);
     currentZonesGeoJSON = await resp.json();
     
-    // Update Map Layer
     updateZonesMap(currentZonesGeoJSON);
-    
-    // Update Municipal Critical Hotspots List
     populateCriticalZones(currentZonesGeoJSON);
 
-    // Compute City Average Risk
     const risks = currentZonesGeoJSON.features.map(f => f.properties.flood_probability || 0);
     const avgRisk = Math.round(risks.reduce((a, b) => a + b, 0) / (risks.length || 1));
     document.getElementById('city-avg-risk').innerText = `Avg Risk: ${avgRisk}%`;
@@ -195,7 +187,6 @@ async function fetchRoads(rainfall = 100) {
   }
 }
 
-/* Zone Detail & SHAP Explainable AI Modal */
 let activeModalZoneProps = null;
 
 function openZoneModal(props) {
@@ -213,7 +204,6 @@ function openZoneModal(props) {
   document.getElementById('modal-elev-val').innerText = `${props.elevation} m`;
   document.getElementById('modal-pop-val').innerText = props.population.toLocaleString();
 
-  // Populate Explainable AI (SHAP Factors)
   const xaiContainer = document.getElementById('xai-bars');
   xaiContainer.innerHTML = '';
 
@@ -255,7 +245,6 @@ function setAsRouteOriginFromModal() {
   }
 }
 
-/* WebSocket Connection */
 function initWebSocket() {
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
   const wsUrl = `${protocol}//${window.location.host}/ws/live-updates`;
