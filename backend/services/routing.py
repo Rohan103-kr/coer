@@ -1,17 +1,41 @@
 import networkx as nx
+import math
 from backend.services.gis import gis_service
 
 class RoutingService:
     def __init__(self):
         pass
 
-    def calculate_routes(self, origin_node, destination_node, rainfall_24h_mm=100.0):
+    def find_nearest_node(self, lat, lon):
+        """Finds the closest road graph node for a given GPS latitude and longitude."""
+        evaluated_roads = gis_service.get_evaluated_roads(100.0)
+        best_node = "N_IIT_ROORKEE"
+        min_dist = float("inf")
+
+        for r in evaluated_roads:
+            for node_key, coords in [("start_node", r["start_coords"]), ("end_node", r["end_coords"])]:
+                node_id = r[node_key]
+                d_lat = coords[0] - lat
+                d_lon = coords[1] - lon
+                dist = math.sqrt(d_lat * d_lat + d_lon * d_lon)
+                if dist < min_dist:
+                    min_dist = dist
+                    best_node = node_id
+        return best_node
+
+    def calculate_routes(self, origin_node, destination_node, rainfall_24h_mm=100.0, user_lat=None, user_lon=None):
         """
         Calculates 3 flood-aware routes:
         1. ⚡ Fastest: Minimizes travel time
         2. 💧 Safest: Avoids waterlogged roads at all costs
         3. ⚖️ Balanced: Optimal trade-off between time and safety
         """
+        # Resolve live GPS coordinates to closest road network node if needed
+        if origin_node == "USER_LIVE_GPS" and user_lat is not None and user_lon is not None:
+            origin_node = self.find_nearest_node(user_lat, user_lon)
+        if destination_node == "USER_LIVE_GPS" and user_lat is not None and user_lon is not None:
+            destination_node = self.find_nearest_node(user_lat, user_lon)
+
         evaluated_roads = gis_service.get_evaluated_roads(rainfall_24h_mm)
         
         # Build base graph
@@ -50,17 +74,14 @@ class RoutingService:
         for mode_key, cfg in mode_configs.items():
             penalty = cfg["penalty"]
             
-            # Compute custom weight function for Dijkstra
             def weight_fn(u, v, d):
                 time = d["t_base"]
                 risk = d["risk"]
-                # Dynamic cost formula: cost = time * (1 + (risk/100)^2 * penalty)
                 return time * (1.0 + ((risk / 100.0) ** 1.8) * penalty)
                 
             try:
                 path_nodes = nx.dijkstra_path(G, origin_node, destination_node, weight=weight_fn)
                 
-                # Extract path segments & statistics
                 path_edges = []
                 total_time = 0.0
                 total_length = 0.0
@@ -102,7 +123,7 @@ class RoutingService:
                     "max_flood_risk": max_risk,
                     "is_recommended": (mode_key == "safest" if avg_risk > 30 else mode_key == "balanced")
                 }
-            except nx.NetworkXNoPath:
+            except (nx.NetworkXNoPath, KeyError):
                 routes_output[mode_key] = None
 
         return routes_output

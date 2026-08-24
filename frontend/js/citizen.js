@@ -2,6 +2,69 @@
 
 let currentRoutesData = null;
 let selectedRouteKey = 'safest';
+let userGpsCoords = null;
+let userGpsMarker = null;
+
+function locateUserGPS() {
+  if ('geolocation' in navigator) {
+    speakAlert("Locating your live GPS coordinates...");
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        userGpsCoords = [lat, lng];
+
+        // Update Origin Select
+        const originSelect = document.getElementById('route-origin');
+        originSelect.value = 'USER_LIVE_GPS';
+
+        // Add GPS Marker on map & fly to it
+        addUserGpsMarker(lat, lng);
+        speakAlert("GPS location locked. Calculating flood-free routes from your position.");
+        calculateRoute();
+      },
+      (error) => {
+        console.warn("GPS Geolocation warning (using Roorkee baseline):", error.message);
+        // Fallback to Roorkee GPS (IIT Roorkee Campus: 29.8649, 77.8965)
+        userGpsCoords = [29.8649, 77.8965];
+        const originSelect = document.getElementById('route-origin');
+        originSelect.value = 'USER_LIVE_GPS';
+        addUserGpsMarker(29.8649, 77.8965);
+        alert("📍 Live GPS locked to Roorkee Campus (29.8649, 77.8965). Finding safest routes...");
+        calculateRoute();
+      },
+      { enableHighAccuracy: true, timeout: 5000 }
+    );
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+}
+
+function addUserGpsMarker(lat, lng) {
+  if (userGpsMarker && map) {
+    map.removeLayer(userGpsMarker);
+  }
+
+  map.flyTo([lat, lng], 14, { duration: 1.2 });
+
+  userGpsMarker = L.circleMarker([lat, lng], {
+    radius: 10,
+    fillColor: '#0284c7',
+    color: '#ffffff',
+    weight: 3,
+    fillOpacity: 0.95
+  }).addTo(map);
+
+  userGpsMarker.bindPopup(`
+    <div style="font-family: Inter; padding: 4px;">
+      <span style="background: #e0f2fe; color: #0284c7; font-size: 0.72rem; font-weight: 800; padding: 2px 6px; border-radius: 4px;">
+        📡 YOUR LIVE GPS POSITION
+      </span>
+      <h4 style="margin: 4px 0 2px 0; font-size: 0.9rem;">Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}</h4>
+      <p style="margin: 0; font-size: 0.75rem; color: #64748b;">Routing from your exact real-time coordinates</p>
+    </div>
+  `).openPopup();
+}
 
 function onRouteInputsChanged() {
   clearRouteLines();
@@ -13,8 +76,13 @@ async function calculateRoute() {
   const dest = document.getElementById('route-dest').value;
   const rainfall = currentRainfallLevel || 100;
 
+  let url = `/api/route?origin=${origin}&destination=${dest}&rainfall=${rainfall}`;
+  if (origin === 'USER_LIVE_GPS' && userGpsCoords) {
+    url += `&lat=${userGpsCoords[0]}&lon=${userGpsCoords[1]}`;
+  }
+
   try {
-    const resp = await fetch(`/api/route?origin=${origin}&destination=${dest}&rainfall=${rainfall}`);
+    const resp = await fetch(url);
     const data = await resp.json();
 
     if (!resp.ok) {
@@ -72,13 +140,12 @@ function selectRouteOption(modeKey) {
 
   if (currentRoutesData && currentRoutesData[modeKey]) {
     const route = currentRoutesData[modeKey];
-    let color = '#16a34a'; // Green for safest
-    if (modeKey === 'fastest') color = '#dc2626'; // Red for fastest if risky
-    else if (modeKey === 'balanced') color = '#0284c7'; // Blue for balanced
+    let color = '#16a34a';
+    if (modeKey === 'fastest') color = '#dc2626';
+    else if (modeKey === 'balanced') color = '#0284c7';
     
     drawRouteOnMap(route, color);
     
-    // Top 1% Voice Navigation Feedback
     if (modeKey === 'safest') {
       speakAlert(`Safest route selected. Travel time is ${route.travel_time_min} minutes with low flood risk.`);
     } else if (modeKey === 'fastest' && route.avg_flood_risk > 50) {
@@ -94,7 +161,6 @@ function getRiskClass(riskVal) {
   return 'risk-crit';
 }
 
-// Incident Report Modal
 function openReportModal() {
   document.getElementById('report-modal').classList.add('active');
 }
@@ -128,10 +194,8 @@ async function submitIncidentReport() {
     speakAlert(`Incident report received for road ${roadId}. Road risk set to 95 percent. Recalculating routes.`);
     alert(`🚨 Incident report submitted! Road ${roadId} risk updated to 95%. Recalculating routes...`);
     
-    // Add visual marker on map
     addIncidentMarker(29.8649, 77.8965, roadId, payload.water_depth);
     
-    // Re-fetch roads and routes
     await fetchRoads();
     if (currentRoutesData) {
       calculateRoute();

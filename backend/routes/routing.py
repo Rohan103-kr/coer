@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException
+from typing import Optional
 from backend.services.routing import routing_service
 from backend.services.gis import gis_service
 
@@ -10,11 +11,13 @@ def get_roads(rainfall: float = Query(100.0)):
 
 @router.get("/route")
 def calculate_route(
-    origin: str = Query("N_VELACHERY", description="Start node ID"),
-    destination: str = Query("N_CENTRAL", description="Destination node ID"),
-    rainfall: float = Query(100.0, description="24-hour rainfall level in mm")
+    origin: str = Query("N_IIT_ROORKEE", description="Start node ID"),
+    destination: str = Query("N_HAR_KI_PAURI", description="Destination node ID"),
+    rainfall: float = Query(100.0, description="24-hour rainfall level in mm"),
+    lat: Optional[float] = Query(None, description="User live GPS latitude"),
+    lon: Optional[float] = Query(None, description="User live GPS longitude")
 ):
-    routes = routing_service.calculate_routes(origin, destination, rainfall)
+    routes = routing_service.calculate_routes(origin, destination, rainfall, user_lat=lat, user_lon=lon)
     if not routes or not routes.get("fastest"):
         raise HTTPException(status_code=404, detail="No route path found between specified locations.")
     return {

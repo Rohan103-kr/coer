@@ -112,15 +112,21 @@
       <!-- 👤 CITIZEN MODE CONTENT -->
       <section id="panel-citizen" class="mode-panel active">
         <div class="card panel-card">
-          <h2 class="card-title">
-            <i data-lucide="navigation" class="icon-blue"></i> Flood-Aware Navigation
-          </h2>
+          <div class="card-header-with-btn">
+            <h2 class="card-title">
+              <i data-lucide="navigation" class="icon-blue"></i> Flood-Aware Navigation
+            </h2>
+            <button class="btn btn-sm btn-outline-blue" onclick="locateUserGPS()">
+              📍 Use My Live GPS
+            </button>
+          </div>
           <p class="card-desc">Safe, waterlogging-free routing across Roorkee & Haridwar.</p>
           
           <div class="form-group">
             <label class="form-label">Starting Point (Origin)</label>
             <select id="route-origin" class="form-select" onchange="onRouteInputsChanged()">
               <option value="N_IIT_ROORKEE">📍 IIT Roorkee Main Campus</option>
+              <option value="USER_LIVE_GPS">📡 My Current Live GPS Location</option>
               <option value="N_CIVIL_LINES">📍 Civil Lines Roorkee</option>
               <option value="N_SOLANI_AQUEDUCT">📍 Solani River Aqueduct</option>
               <option value="N_BAHADRABAD">📍 Bahadrabad Highway Junction</option>
@@ -287,7 +293,7 @@
 
       <!-- Basemap Layer Switcher -->
       <div class="basemap-switcher">
-        <button class="bm-btn active" onclick="switchBasemap('voyager')">🗺️ Light</button>
+        <button class="bm-btn active" onclick="switchBasemap('osm')">🗺️ OpenStreetMap</button>
         <button class="bm-btn" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
         <button class="bm-btn" onclick="switchBasemap('dark')">🌙 Dark GIS</button>
       </div>
