@@ -12,7 +12,7 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 
 def train_isro_landslide_models():
     print("=" * 60)
-    print("🛰️ ISRO LANDSLIDE ATLAS (2023) ML MODEL TRAINING PIPELINE")
+    print("🛰️ ISRO ATLAS (2023) + NASA SRTM 30m DEM ML MODEL TRAINING PIPELINE")
     print("=" * 60)
     
     csv_path = os.path.join(os.path.dirname(__file__), "..", "data", "isro_landslide_atlas_2023.csv")
@@ -21,14 +21,15 @@ def train_isro_landslide_models():
         build_isro_landslide_dataset()
 
     df = pd.read_csv(csv_path)
-    print(f"Dataset Loaded: {len(df)} ground-truth ISRO NRSC records across {df['district'].nunique()} high-density districts.")
+    print(f"Dataset Loaded: {len(df)} ground-truth ISRO NRSC + NASA SRTM records across {df['district'].nunique()} high-density districts.")
 
     # Encoders
     le_region = LabelEncoder()
     df["region_code"] = le_region.fit_transform(df["geographic_region"])
 
     feature_cols = [
-        "isro_atlas_rank", "region_code", "elevation_m", "slope_deg",
+        "isro_atlas_rank", "region_code", "srtm_elevation_m", "srtm_slope_deg",
+        "srtm_aspect_deg", "srtm_roughness_index", "srtm_topographic_wetness_index",
         "soil_thickness_m", "soil_saturation_pct", "vegetation_ndvi",
         "rainfall_1h_mm", "rainfall_24h_mm", "previous_7d_rainfall_mm"
     ]
@@ -43,13 +44,13 @@ def train_isro_landslide_models():
     X_test_scaled = scaler.transform(X_test)
 
     # 1. XGBoost / HistGB Model
-    xgb_model = HistGradientBoostingClassifier(max_iter=150, random_state=42)
+    xgb_model = HistGradientBoostingClassifier(max_iter=160, random_state=42)
     xgb_model.fit(X_train, y_train)
     xgb_preds = xgb_model.predict(X_test)
     xgb_probs = xgb_model.predict_proba(X_test)[:, 1]
 
     # 2. Random Forest Model
-    rf_model = RandomForestClassifier(n_estimators=100, random_state=42)
+    rf_model = RandomForestClassifier(n_estimators=120, random_state=42)
     rf_model.fit(X_train, y_train)
     rf_preds = rf_model.predict(X_test)
     rf_probs = rf_model.predict_proba(X_test)[:, 1]
@@ -76,12 +77,12 @@ def train_isro_landslide_models():
             "RandomForest": {"Accuracy": round(float(acc_r), 4), "ROC-AUC": round(float(roc_r), 4)}
         },
         "feature_importances": feat_imp,
-        "dataset_name": "ISRO NRSC Landslide Atlas of India (2023)"
+        "dataset_name": "ISRO NRSC Landslide Atlas 2023 & NASA SRTM 30m DEM"
     }
 
     model_path = os.path.join(os.path.dirname(__file__), "..", "data", "isro_landslide_model.pkl")
     joblib.dump(save_dict, model_path)
-    print(f"✅ ISRO Landslide Prediction Model saved successfully to: {model_path}")
+    print(f"✅ ISRO + NASA SRTM Landslide Model saved successfully to: {model_path}")
     print("=" * 60)
     return save_dict
 
