@@ -1,0 +1,182 @@
+[
+  {
+    "road_id": "R01",
+    "name": "IIT Roorkee Main Gate Road",
+    "start_node": "N_IIT_ROORKEE",
+    "end_node": "N_CIVIL_LINES",
+    "length_km": 1.8,
+    "road_type": "Arterial",
+    "base_time_min": 4.0,
+    "start_coords": [
+      29.8649,
+      77.8965
+    ],
+    "end_coords": [
+      29.858,
+      77.888
+    ],
+    "zone_id": "ZONE-RK01"
+  },
+  {
+    "road_id": "R02",
+    "name": "NH-58 Highway (Roorkee to Bahadrabad)",
+    "start_node": "N_CIVIL_LINES",
+    "end_node": "N_BAHADRABAD",
+    "length_km": 14.5,
+    "road_type": "National Highway",
+    "base_time_min": 18.0,
+    "start_coords": [
+      29.858,
+      77.888
+    ],
+    "end_coords": [
+      29.895,
+      78.035
+    ],
+    "zone_id": "ZONE-RK02"
+  },
+  {
+    "road_id": "R03",
+    "name": "NH-58 Highway (Bahadrabad to Jwalapur)",
+    "start_node": "N_BAHADRABAD",
+    "end_node": "N_JWALAPUR",
+    "length_km": 9.2,
+    "road_type": "National Highway",
+    "base_time_min": 12.0,
+    "start_coords": [
+      29.895,
+      78.035
+    ],
+    "end_coords": [
+      29.928,
+      78.115
+    ],
+    "zone_id": "ZONE-HW05"
+  },
+  {
+    "road_id": "R04",
+    "name": "Haridwar Bypass (Jwalapur to Har Ki Pauri)",
+    "start_node": "N_JWALAPUR",
+    "end_node": "N_HAR_KI_PAURI",
+    "length_km": 6.8,
+    "road_type": "Expressway",
+    "base_time_min": 9.0,
+    "start_coords": [
+      29.928,
+      78.115
+    ],
+    "end_coords": [
+      29.956,
+      78.17
+    ],
+    "zone_id": "ZONE-HW01"
+  },
+  {
+    "road_id": "R05",
+    "name": "Roorkee Railway Station Link",
+    "start_node": "N_CIVIL_LINES",
+    "end_node": "N_GANESHPUR",
+    "length_km": 2.2,
+    "road_type": "Sub-arterial",
+    "base_time_min": 5.0,
+    "start_coords": [
+      29.858,
+      77.888
+    ],
+    "end_coords": [
+      29.845,
+      77.88
+    ],
+    "zone_id": "ZONE-RK04"
+  },
+  {
+    "road_id": "R06",
+    "name": "Solani River Canal Bank Road",
+    "start_node": "N_IIT_ROORKEE",
+    "end_node": "N_SOLANI_AQUEDUCT",
+    "length_km": 3.2,
+    "road_type": "Canal Road",
+    "base_time_min": 6.5,
+    "start_coords": [
+      29.8649,
+      77.8965
+    ],
+    "end_coords": [
+      29.878,
+      77.91
+    ],
+    "zone_id": "ZONE-RK03"
+  },
+  {
+    "road_id": "R07",
+    "name": "BHEL Township Sector Road",
+    "start_node": "N_JWALAPUR",
+    "end_node": "N_BHEL_RANIPUR",
+    "length_km": 4.1,
+    "road_type": "Sub-arterial",
+    "base_time_min": 7.0,
+    "start_coords": [
+      29.928,
+      78.115
+    ],
+    "end_coords": [
+      29.91,
+      78.085
+    ],
+    "zone_id": "ZONE-HW03"
+  },
+  {
+    "road_id": "R08",
+    "name": "Kankhal Heritage Ghat Road",
+    "start_node": "N_JWALAPUR",
+    "end_node": "N_KANKHAL",
+    "length_km": 3.5,
+    "road_type": "Heritage Road",
+    "base_time_min": 7.5,
+    "start_coords": [
+      29.928,
+      78.115
+    ],
+    "end_coords": [
+      29.935,
+      78.145
+    ],
+    "zone_id": "ZONE-HW04"
+  },
+  {
+    "road_id": "R09",
+    "name": "Upper Ganges Canal Express Corridor",
+    "start_node": "N_SOLANI_AQUEDUCT",
+    "end_node": "N_HAR_KI_PAURI",
+    "length_km": 28.0,
+    "road_type": "Express Corridor",
+    "base_time_min": 32.0,
+    "start_coords": [
+      29.878,
+      77.91
+    ],
+    "end_coords": [
+      29.956,
+      78.17
+    ],
+    "zone_id": "ZONE-HW01"
+  },
+  {
+    "road_id": "R17",
+    "name": "Solani Aqueduct Floodplain Bypass",
+    "start_node": "N_IIT_ROORKEE",
+    "end_node": "N_BAHADRABAD",
+    "length_km": 15.2,
+    "road_type": "Bypass Highway",
+    "base_time_min": 20.0,
+    "start_coords": [
+      29.8649,
+      77.8965
+    ],
+    "end_coords": [
+      29.895,
+      78.035
+    ],
+    "zone_id": "ZONE-RK03"
+  }
+]

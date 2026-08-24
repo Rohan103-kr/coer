@@ -1,0 +1,116 @@
+[
+  {
+    "drain_id": "D01",
+    "name": "Solani River Canal Feeder",
+    "ward": "Ward 18 - Solani Bank",
+    "zone_id": "ZONE-RK03",
+    "capacity_m3s": 42.0,
+    "upstream": "Solani Aqueduct",
+    "downstream": "D17",
+    "coords": [
+      [
+        29.878,
+        77.91
+      ],
+      [
+        29.865,
+        77.925
+      ]
+    ]
+  },
+  {
+    "drain_id": "D02",
+    "name": "Civil Lines Main Nullah",
+    "ward": "Ward 12 - Civil Lines",
+    "zone_id": "ZONE-RK02",
+    "capacity_m3s": 19.0,
+    "upstream": "IIT Roorkee Boundary",
+    "downstream": "Solani River",
+    "coords": [
+      [
+        29.858,
+        77.888
+      ],
+      [
+        29.87,
+        77.9
+      ]
+    ]
+  },
+  {
+    "drain_id": "D17",
+    "name": "Solani Floodplain Outfall Arterial Drain",
+    "ward": "Ward 18 - Solani Bank",
+    "zone_id": "ZONE-RK03",
+    "capacity_m3s": 38.0,
+    "upstream": "D01",
+    "downstream": "Ganges Main Channel",
+    "coords": [
+      [
+        29.865,
+        77.925
+      ],
+      [
+        29.85,
+        77.94
+      ]
+    ]
+  },
+  {
+    "drain_id": "D21",
+    "name": "Upper Ganges Canal Spillway Drain",
+    "ward": "Ward 01 - Har Ki Pauri",
+    "zone_id": "ZONE-HW01",
+    "capacity_m3s": 55.0,
+    "upstream": "Bhimgoda Barrage",
+    "downstream": "Ganges River",
+    "coords": [
+      [
+        29.956,
+        78.17
+      ],
+      [
+        29.945,
+        78.18
+      ]
+    ]
+  },
+  {
+    "drain_id": "D08",
+    "name": "Jwalapur Old Canal Drain",
+    "ward": "Ward 15 - Jwalapur",
+    "zone_id": "ZONE-HW02",
+    "capacity_m3s": 22.0,
+    "upstream": "Arya Nagar Market",
+    "downstream": "Kankhal Nullah",
+    "coords": [
+      [
+        29.928,
+        78.115
+      ],
+      [
+        29.92,
+        78.13
+      ]
+    ]
+  },
+  {
+    "drain_id": "D15",
+    "name": "Bahadrabad Industrial Canal Drain",
+    "ward": "Ward 28 - Bahadrabad",
+    "zone_id": "ZONE-HW05",
+    "capacity_m3s": 28.0,
+    "upstream": "BHEL Industrial Outfall",
+    "downstream": "Ganges Canal",
+    "coords": [
+      [
+        29.895,
+        78.035
+      ],
+      [
+        29.885,
+        78.05
+      ]
+    ]
+  }
+]

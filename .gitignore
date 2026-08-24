@@ -1,0 +1,19 @@
+# Python virtualenv & caches
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Mac OS files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# IDE files
+.vscode/
+.idea/
+
+# Local data cache
+data/*.pkl

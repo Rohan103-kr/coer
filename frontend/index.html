@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌧️ DrainMind AI | Roorkee & Haridwar Waterlogging Resilience</title>
+  <meta name="description" content="Predict → Explain → Route → Optimize urban flood risk and stormwater drainage for Roorkee & Haridwar with AI/ML, Open-Meteo Live Weather, GIS, and OR-Tools.">
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Leaflet GIS Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin=""/>
+  
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Custom Minimalist CSS -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="light-theme">
+  <!-- Minimal Header Bar -->
+  <header class="app-header">
+    <div class="brand-group">
+      <div class="brand-logo">
+        <i data-lucide="cloud-rain" class="icon-blue"></i>
+      </div>
+      <div>
+        <h1 class="brand-title">DrainMind <span class="badge-ai">AI</span></h1>
+        <p class="brand-subtitle">Roorkee & Haridwar Flood Resilience System</p>
+      </div>
+    </div>
+
+    <!-- Mode Switcher Tabs -->
+    <div class="mode-tabs">
+      <button id="tab-citizen" class="tab-btn active" onclick="switchMode('citizen')">
+        <i data-lucide="user-check"></i> Citizen Mode
+      </button>
+      <button id="tab-municipal" class="tab-btn" onclick="switchMode('municipal')">
+        <i data-lucide="building-2"></i> Municipal Mode
+      </button>
+    </div>
+
+    <!-- Live Weather Status & Real-time Toggle -->
+    <div class="header-status">
+      <button id="live-weather-btn" class="btn-live-toggle" onclick="toggleLiveWeatherMode()">
+        <span class="live-dot pulse"></span>
+        <span id="live-mode-label">LIVE WEATHER (Roorkee/Haridwar)</span>
+      </button>
+
+      <div class="status-pill status-rainfall">
+        <i data-lucide="droplet" class="icon-blue"></i>
+        <span id="current-rainfall-disp">Rainfall: 100 mm</span>
+      </div>
+      <div class="status-pill status-risk" id="city-risk-pill">
+        <i data-lucide="shield-alert" class="icon-brown"></i>
+        <span id="city-avg-risk">Avg Risk: 42%</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Application Container -->
+  <main class="app-container">
+    
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar-panel">
+      
+      <!-- Live Real-Time Banner (Shown when Live Weather mode is active) -->
+      <div id="live-weather-card" class="card card-live-banner" style="display: none;">
+        <div class="live-banner-header">
+          <span class="badge-live"><span class="live-dot"></span> LIVE METEO FEED</span>
+          <span id="live-station-time" class="live-time">Roorkee-Haridwar Station • Just now</span>
+        </div>
+        <div class="live-metrics-grid">
+          <div class="lm-box">
+            <span class="lm-label">24h Cumulative Rain</span>
+            <span id="live-rf-val" class="lm-value text-blue">6.2 mm</span>
+          </div>
+          <div class="lm-box">
+            <span class="lm-label">Temp / Humidity</span>
+            <span id="live-temp-val" class="lm-value">28.0°C (85%)</span>
+          </div>
+        </div>
+        <div class="live-status-text" id="live-weather-desc">
+          Condition: Light Rain / Canal Moisture
+        </div>
+      </div>
+      
+      <!-- 👤 CITIZEN MODE CONTENT -->
+      <section id="panel-citizen" class="mode-panel active">
+        <div class="card panel-card">
+          <h2 class="card-title">
+            <i data-lucide="navigation" class="icon-blue"></i> Flood-Aware Navigation
+          </h2>
+          <p class="card-desc">Safe, waterlogging-free routing across Roorkee & Haridwar.</p>
+          
+          <div class="form-group">
+            <label class="form-label">Starting Point (Origin)</label>
+            <select id="route-origin" class="form-select" onchange="onRouteInputsChanged()">
+              <option value="N_IIT_ROORKEE">📍 IIT Roorkee Main Campus</option>
+              <option value="N_CIVIL_LINES">📍 Civil Lines Roorkee</option>
+              <option value="N_SOLANI_AQUEDUCT">📍 Solani River Aqueduct</option>
+              <option value="N_BAHADRABAD">📍 Bahadrabad Highway Junction</option>
+              <option value="N_JWALAPUR">📍 Jwalapur Market (Haridwar)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Destination</label>
+            <select id="route-dest" class="form-select" onchange="onRouteInputsChanged()">
+              <option value="N_HAR_KI_PAURI">🏁 Har Ki Pauri Ghats (Haridwar)</option>
+              <option value="N_JWALAPUR">🏁 Jwalapur Bazaar</option>
+              <option value="N_BHEL_RANIPUR">🏁 BHEL Ranipur Township</option>
+              <option value="N_CIVIL_LINES">🏁 Civil Lines Roorkee</option>
+              <option value="N_KANKHAL">🏁 Kankhal Heritage Zone</option>
+            </select>
+          </div>
+
+          <button class="btn btn-primary" onclick="calculateRoute()">
+            <i data-lucide="route"></i> Find Optimal Route
+          </button>
+        </div>
+
+        <!-- Route Options Cards -->
+        <div id="route-results-container" class="route-cards-container" style="display: none;">
+          <h3 class="section-heading">Available Options</h3>
+          
+          <!-- Route A: Fastest -->
+          <div id="card-fastest" class="route-option-card" onclick="selectRouteOption('fastest')">
+            <div class="route-card-header">
+              <span class="route-tag tag-fastest">⚡ Fastest</span>
+              <span id="fastest-time" class="route-time">32 mins</span>
+            </div>
+            <div class="route-card-body">
+              <span id="fastest-dist" class="route-detail">28.5 km</span>
+              <span id="fastest-risk" class="risk-badge risk-high">Flood Risk: 75%</span>
+            </div>
+          </div>
+
+          <!-- Route B: Safest -->
+          <div id="card-safest" class="route-option-card selected" onclick="selectRouteOption('safest')">
+            <div class="route-card-header">
+              <span class="route-tag tag-safest">💧 Safest ⭐</span>
+              <span id="safest-time" class="route-time">38 mins</span>
+            </div>
+            <div class="route-card-body">
+              <span id="safest-dist" class="route-detail">31.2 km</span>
+              <span id="safest-risk" class="risk-badge risk-low">Flood Risk: 14%</span>
+            </div>
+          </div>
+
+          <!-- Route C: Balanced -->
+          <div id="card-balanced" class="route-option-card" onclick="selectRouteOption('balanced')">
+            <div class="route-card-header">
+              <span class="route-tag tag-balanced">⚖️ Balanced</span>
+              <span id="balanced-time" class="route-time">34 mins</span>
+            </div>
+            <div class="route-card-body">
+              <span id="balanced-dist" class="route-detail">29.8 km</span>
+              <span id="balanced-risk" class="risk-badge risk-mod">Flood Risk: 26%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Citizen Incident Reporting Card -->
+        <div class="card panel-card card-report">
+          <div class="report-header">
+            <div>
+              <h3 class="card-title"><i data-lucide="alert-triangle" class="icon-brown"></i> Report Waterlogging</h3>
+              <p class="card-desc">Help real-time navigation by reporting flooded roads.</p>
+            </div>
+            <button class="btn btn-outline-brown btn-sm" onclick="openReportModal()">Report</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🏛️ CITY / MUNICIPAL MODE CONTENT -->
+      <section id="panel-municipal" class="mode-panel">
+        
+        <!-- Hotspots List -->
+        <div class="card panel-card">
+          <h2 class="card-title">
+            <i data-lucide="activity" class="icon-brown"></i> Critical Hotspot Wards
+          </h2>
+          <p class="card-desc">High risk areas needing priority municipal intervention.</p>
+          <div id="critical-zones-list" class="zones-scroll-list">
+            <!-- Dynamic Zone Items -->
+          </div>
+        </div>
+
+        <!-- Bottleneck Inference Card -->
+        <div class="card panel-card card-bottleneck">
+          <h2 class="card-title">
+            <i data-lucide="git-commit" class="icon-brown"></i> Drainage Bottleneck Inference
+          </h2>
+          <p class="card-desc">Solani & Upper Ganges Canal degradation analysis.</p>
+
+          <div id="bottleneck-summary-box" class="bottleneck-box">
+            <div class="bottleneck-metric">
+              <span class="bm-label">Suspected Bottleneck</span>
+              <span id="bm-drain-id" class="bm-value text-brown">Solani Outfall D17</span>
+            </div>
+            <div class="bottleneck-metric">
+              <span class="bm-label">Confidence Score</span>
+              <span id="bm-score" class="bm-value text-brown">89% 🔴</span>
+            </div>
+            <p id="bm-rec" class="bm-note">Field desilting recommended for Solani Canal Outfall.</p>
+          </div>
+        </div>
+
+        <!-- Budget Intervention Optimizer Card -->
+        <div class="card panel-card card-optimizer">
+          <h2 class="card-title">
+            <i data-lucide="coins" class="icon-green"></i> Municipal Budget Optimizer
+          </h2>
+          <p class="card-desc">Maximize population protected under budget limits (OR-Tools).</p>
+          
+          <div class="form-group">
+            <label class="form-label" for="budget-range">Available Municipal Budget (₹ Lakhs)</label>
+            <div class="budget-input-group">
+              <input type="range" id="budget-range" min="1" max="25" value="10" step="0.5" oninput="updateBudgetVal(this.value)">
+              <span id="budget-val-disp" class="badge-budget">₹ 10 Lakhs</span>
+            </div>
+          </div>
+
+          <button class="btn btn-green" onclick="runOptimization()">
+            <i data-lucide="cpu"></i> Generate Action Plan
+          </button>
+
+          <!-- Optimizer Result Box -->
+          <div id="optimizer-results" class="optimizer-results-box" style="display: none;">
+            <div class="opt-impact-row">
+              <div class="opt-stat">
+                <span class="stat-num text-red" id="opt-before-risk">89%</span>
+                <span class="stat-lbl">Solani Risk Before</span>
+              </div>
+              <div class="opt-arrow">➔</div>
+              <div class="opt-stat">
+                <span class="stat-num text-green" id="opt-after-risk">25%</span>
+                <span class="stat-lbl">Simulated Risk After</span>
+              </div>
+            </div>
+
+            <div class="protected-pill">
+              <i data-lucide="users" class="icon-green"></i> <span id="opt-protected-pop">195,000</span> Citizens Protected
+            </div>
+
+            <h4 class="action-plan-title">RECOMMENDED ACTION PLAN</h4>
+            <ul id="action-plan-list" class="action-list">
+              <!-- Actions -->
+            </ul>
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Map & Simulator Area -->
+    <section class="map-wrapper">
+      <div id="map" class="gis-map"></div>
+
+      <!-- GIS Map Legend -->
+      <div class="map-legend">
+        <div class="legend-title">Flood Risk Index</div>
+        <div class="legend-scale">
+          <span class="legend-item"><span class="color-box bg-green"></span> 0–30 Low</span>
+          <span class="legend-item"><span class="color-box bg-yellow"></span> 31–60 Mod</span>
+          <span class="legend-item"><span class="color-box bg-orange"></span> 61–80 High</span>
+          <span class="legend-item"><span class="color-box bg-red"></span> 81–100 Critical</span>
+        </div>
+      </div>
+
+      <!-- Bottom Floating Rainfall Simulator Slider -->
+      <div class="simulator-bar">
+        <div class="sim-header">
+          <span class="sim-label"><i data-lucide="sliders" class="icon-blue"></i> Monsoon Rainfall Simulator</span>
+          <span id="sim-rain-val" class="sim-val">100 mm</span>
+        </div>
+        <div class="slider-container">
+          <input type="range" id="rainfall-slider" min="0" max="250" value="100" step="5" oninput="onRainfallSliderChange(this.value)">
+          <div class="slider-ticks">
+            <span>0mm (Dry)</span>
+            <span>50mm</span>
+            <span>100mm (Heavy)</span>
+            <span>150mm</span>
+            <span>200mm (Extreme)</span>
+            <span>250mm</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Zone Detail & Explainable AI (SHAP) Drawer Modal -->
+  <div id="zone-modal" class="modal-backdrop" onclick="closeZoneModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeZoneModal()">&times;</button>
+      <div class="modal-header">
+        <span id="modal-zone-id" class="modal-tag">ZONE-RK03</span>
+        <h2 id="modal-zone-name" class="modal-title">Solani River Aqueduct Zone</h2>
+        <p id="modal-ward-name" class="modal-subtitle">Ward 18 • Roorkee Municipal Corporation</p>
+      </div>
+
+      <div class="modal-metrics-grid">
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Flood Risk</span>
+          <span id="modal-risk-pct" class="mm-val text-red">89%</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Simulated Rainfall</span>
+          <span id="modal-rainfall-val" class="mm-val text-blue">100 mm</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Elevation</span>
+          <span id="modal-elev-val" class="mm-val text-brown">260 m</span>
+        </div>
+        <div class="modal-metric-card">
+          <span class="mm-lbl">Population</span>
+          <span id="modal-pop-val" class="mm-val">38,000</span>
+        </div>
+      </div>
+
+      <!-- Explainable AI (SHAP Breakdown) -->
+      <div class="xai-container">
+        <h3 class="xai-title">🔍 Explainable AI — Why is risk 89%?</h3>
+        <p class="xai-desc">XGBoost ML Feature Attribution (SHAP factors driving risk prediction)</p>
+        <div id="xai-bars" class="xai-bars-list">
+          <!-- SHAP Bars -->
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="setAsRouteOriginFromModal()">
+          <i data-lucide="navigation"></i> Route From Here
+        </button>
+        <button class="btn btn-outline" onclick="closeZoneModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Citizen Incident Report Modal -->
+  <div id="report-modal" class="modal-backdrop" onclick="closeReportModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeReportModal()">&times;</button>
+      <div class="modal-header">
+        <h2 class="modal-title">📍 Citizen Incident Report</h2>
+        <p class="modal-subtitle">Report active waterlogging to dynamically update navigation paths.</p>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Road Location</label>
+        <select id="report-road-id" class="form-select">
+          <option value="R01">IIT Roorkee Main Gate Road (R01)</option>
+          <option value="R02">NH-58 Highway Roorkee-Bahadrabad (R02)</option>
+          <option value="R04">Haridwar Bypass Jwalapur (R04)</option>
+          <option value="R06">Solani River Canal Bank Road (R06)</option>
+          <option value="R17">Solani Aqueduct Floodplain Bypass (R17)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Water Level Depth</label>
+        <div class="radio-tiles">
+          <label class="tile"><input type="radio" name="water_depth" value="Low"> <span>🟢 Low (&lt;15cm)</span></label>
+          <label class="tile"><input type="radio" name="water_depth" value="Medium" checked> <span>🟡 Medium (15-30cm)</span></label>
+          <label class="tile"><input type="radio" name="water_depth" value="High"> <span>🔴 High (&gt;30cm)</span></label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Is Road Passable by Car/Bike?</label>
+        <div class="radio-tiles">
+          <label class="tile"><input type="radio" name="passable" value="yes"> <span>YES (Passable)</span></label>
+          <label class="tile"><input type="radio" name="passable" value="no" checked> <span>NO (Impassable)</span></label>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-brown" onclick="submitIncidentReport()">
+          <i data-lucide="send"></i> Submit Report
+        </button>
+        <button class="btn btn-outline" onclick="closeReportModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  
+  <!-- Frontend Scripts -->
+  <script src="/static/js/map.js"></script>
+  <script src="/static/js/citizen.js"></script>
+  <script src="/static/js/municipal.js"></script>
+  <script src="/static/js/simulator.js"></script>
+  <script src="/static/js/app.js"></script>
+</body>
+</html>

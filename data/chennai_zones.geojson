@@ -1,0 +1,446 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-RK01",
+        "name": "IIT Roorkee Campus",
+        "ward": "Ward 04 - University",
+        "elevation": 268.0,
+        "slope": 0.8,
+        "built_up_percentage": 75.0,
+        "green_cover": 22.0,
+        "drainage_density": 2.8,
+        "population": 28000,
+        "historical_flood_count": 6,
+        "distance_to_waterbody": 0.3,
+        "hospitals": 2,
+        "schools": 5,
+        "center": [
+          29.8649,
+          77.8965
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.888,
+              29.872
+            ],
+            [
+              77.904,
+              29.872
+            ],
+            [
+              77.904,
+              29.858
+            ],
+            [
+              77.888,
+              29.858
+            ],
+            [
+              77.888,
+              29.872
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-RK02",
+        "name": "Civil Lines Roorkee",
+        "ward": "Ward 12 - Civil Lines",
+        "elevation": 265.0,
+        "slope": 0.5,
+        "built_up_percentage": 92.0,
+        "green_cover": 5.0,
+        "drainage_density": 1.6,
+        "population": 45000,
+        "historical_flood_count": 14,
+        "distance_to_waterbody": 0.6,
+        "hospitals": 4,
+        "schools": 8,
+        "center": [
+          29.858,
+          77.888
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.88,
+              29.864
+            ],
+            [
+              77.894,
+              29.864
+            ],
+            [
+              77.894,
+              29.85
+            ],
+            [
+              77.88,
+              29.85
+            ],
+            [
+              77.88,
+              29.864
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-RK03",
+        "name": "Solani River Aqueduct Zone",
+        "ward": "Ward 18 - Solani Bank",
+        "elevation": 260.0,
+        "slope": 0.3,
+        "built_up_percentage": 68.0,
+        "green_cover": 25.0,
+        "drainage_density": 1.2,
+        "population": 38000,
+        "historical_flood_count": 19,
+        "distance_to_waterbody": 0.1,
+        "hospitals": 1,
+        "schools": 4,
+        "center": [
+          29.878,
+          77.91
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.9,
+              29.886
+            ],
+            [
+              77.92,
+              29.886
+            ],
+            [
+              77.92,
+              29.87
+            ],
+            [
+              77.9,
+              29.87
+            ],
+            [
+              77.9,
+              29.886
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-RK04",
+        "name": "Ganeshpur / Roorkee Railway Station",
+        "ward": "Ward 08 - Ganeshpur",
+        "elevation": 262.5,
+        "slope": 0.4,
+        "built_up_percentage": 88.0,
+        "green_cover": 8.0,
+        "drainage_density": 1.8,
+        "population": 52000,
+        "historical_flood_count": 15,
+        "distance_to_waterbody": 0.8,
+        "hospitals": 3,
+        "schools": 7,
+        "center": [
+          29.845,
+          77.88
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              77.87,
+              29.852
+            ],
+            [
+              77.89,
+              29.852
+            ],
+            [
+              77.89,
+              29.838
+            ],
+            [
+              77.87,
+              29.838
+            ],
+            [
+              77.87,
+              29.852
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-HW01",
+        "name": "Har Ki Pauri / Upper Canal Ghats",
+        "ward": "Ward 01 - Har Ki Pauri",
+        "elevation": 294.0,
+        "slope": 0.9,
+        "built_up_percentage": 95.0,
+        "green_cover": 3.0,
+        "drainage_density": 2.2,
+        "population": 65000,
+        "historical_flood_count": 17,
+        "distance_to_waterbody": 0.05,
+        "hospitals": 5,
+        "schools": 10,
+        "center": [
+          29.956,
+          78.17
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.16,
+              29.965
+            ],
+            [
+              78.18,
+              29.965
+            ],
+            [
+              78.18,
+              29.948
+            ],
+            [
+              78.16,
+              29.948
+            ],
+            [
+              78.16,
+              29.965
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-HW02",
+        "name": "Jwalapur / Arya Nagar",
+        "ward": "Ward 15 - Jwalapur",
+        "elevation": 286.0,
+        "slope": 0.5,
+        "built_up_percentage": 91.0,
+        "green_cover": 6.0,
+        "drainage_density": 1.5,
+        "population": 85000,
+        "historical_flood_count": 13,
+        "distance_to_waterbody": 1.1,
+        "hospitals": 6,
+        "schools": 14,
+        "center": [
+          29.928,
+          78.115
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.105,
+              29.936
+            ],
+            [
+              78.125,
+              29.936
+            ],
+            [
+              78.125,
+              29.92
+            ],
+            [
+              78.105,
+              29.92
+            ],
+            [
+              78.105,
+              29.936
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-HW03",
+        "name": "BHEL Ranipur Township",
+        "ward": "Ward 22 - Ranipur",
+        "elevation": 285.0,
+        "slope": 0.7,
+        "built_up_percentage": 70.0,
+        "green_cover": 24.0,
+        "drainage_density": 3.0,
+        "population": 72000,
+        "historical_flood_count": 7,
+        "distance_to_waterbody": 2.2,
+        "hospitals": 3,
+        "schools": 12,
+        "center": [
+          29.91,
+          78.085
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.075,
+              29.92
+            ],
+            [
+              78.095,
+              29.92
+            ],
+            [
+              78.095,
+              29.9
+            ],
+            [
+              78.075,
+              29.9
+            ],
+            [
+              78.075,
+              29.92
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-HW04",
+        "name": "Kankhal / Sanyas Road",
+        "ward": "Ward 09 - Kankhal Heritage",
+        "elevation": 288.0,
+        "slope": 0.4,
+        "built_up_percentage": 89.0,
+        "green_cover": 8.0,
+        "drainage_density": 1.7,
+        "population": 58000,
+        "historical_flood_count": 12,
+        "distance_to_waterbody": 0.4,
+        "hospitals": 4,
+        "schools": 9,
+        "center": [
+          29.935,
+          78.145
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.135,
+              29.943
+            ],
+            [
+              78.155,
+              29.943
+            ],
+            [
+              78.155,
+              29.927
+            ],
+            [
+              78.135,
+              29.927
+            ],
+            [
+              78.135,
+              29.943
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "zone_id": "ZONE-HW05",
+        "name": "Bahadrabad Canal Outflow",
+        "ward": "Ward 28 - Bahadrabad",
+        "elevation": 275.0,
+        "slope": 0.3,
+        "built_up_percentage": 65.0,
+        "green_cover": 28.0,
+        "drainage_density": 1.4,
+        "population": 42000,
+        "historical_flood_count": 16,
+        "distance_to_waterbody": 0.2,
+        "hospitals": 2,
+        "schools": 6,
+        "center": [
+          29.895,
+          78.035
+        ]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              78.025,
+              29.905
+            ],
+            [
+              78.045,
+              29.905
+            ],
+            [
+              78.045,
+              29.885
+            ],
+            [
+              78.025,
+              29.885
+            ],
+            [
+              78.025,
+              29.905
+            ]
+          ]
+        ]
+      }
+    }
+  ]
+}
