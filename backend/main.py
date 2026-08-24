@@ -7,12 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 
-from backend.routes import prediction, routing, reports, optimization
+from backend.routes import prediction, routing, reports, optimization, croppulse
 
 app = FastAPI(
-    title="🌧️ DrainMind AI - ClimateTech Resilience Platform",
-    description="Predict → Explain → Route → Optimize for Urban Waterlogging Resilience",
-    version="1.0.0"
+    title="🌾 CropPulse AI & 🌧️ DrainMind AI Platform",
+    description="AgriTech Crop-to-Market Intelligence & Climate Resilience Platform",
+    version="2.0.0"
 )
 
 # Enable CORS for local development
@@ -25,12 +25,13 @@ app.add_middleware(
 )
 
 # Include API Routers
+app.include_router(croppulse.router)
 app.include_router(prediction.router)
 app.include_router(routing.router)
 app.include_router(reports.router)
 app.include_router(optimization.router)
 
-# WebSocket Connection Manager for Real-Time Incident Alerts
+# WebSocket Connection Manager
 class ConnectionManager:
     def __init__(self):
         self.active_connections: list[WebSocket] = []
@@ -58,8 +59,7 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            # Echo or process incoming citizen alerts
-            await manager.broadcast({"event": "citizen_alert", "data": data})
+            await manager.broadcast({"event": "alert", "data": data})
     except WebSocketDisconnect:
         manager.disconnect(websocket)
 
@@ -74,7 +74,7 @@ def read_root():
     index_file = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(index_file):
         return FileResponse(index_file)
-    return JSONResponse({"message": "DrainMind AI Backend operational. Launching API..."})
+    return JSONResponse({"message": "CropPulse AI Backend operational."})
 
 if __name__ == "__main__":
     import uvicorn

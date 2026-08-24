@@ -1326,6 +1326,220 @@ body {
   font-weight: 600;
 }
 
+/* CropPulse AI Custom Theme Variables */
+:root {
+  --agri-green: #15803d;
+  --agri-green-light: #f0fdf4;
+  --agri-amber: #d97706;
+  --agri-amber-light: #fffbeb;
+  --agri-brown: #78350f;
+  --agri-card-border: #e2e8f0;
+}
+
+.badge-agri {
+  background-color: var(--agri-green);
+}
+
+.bg-agri-light {
+  background-color: var(--agri-green-light);
+  border-color: #bbf7d0;
+}
+
+.bg-agri-amber {
+  background-color: #fef3c7;
+  border-color: #fde68a;
+}
+
+.bg-amber-soft {
+  background-color: #fffbeb;
+  border: 1px solid #fef3c7;
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+}
+
+.workspace-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.agri-panel {
+  display: none;
+}
+
+.agri-panel.active {
+  display: block;
+}
+
+/* Hero Recommended Crop Banner */
+.hero-agri-card {
+  background: linear-gradient(135deg, #15803d 0%, #166534 100%);
+  color: #ffffff;
+  border: none;
+  box-shadow: 0 8px 24px rgba(21, 128, 61, 0.25);
+  border-radius: 12px;
+  padding: 20px 24px;
+}
+
+.hero-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.badge-rec {
+  background: #fef08a;
+  color: #854d0e;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 0.76rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.hero-score {
+  font-weight: 700;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 4px 12px;
+  border-radius: 16px;
+}
+
+.hero-main-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.hero-main-title h2 {
+  font-family: 'Outfit', sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+}
+
+.hero-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.hs-box {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-main);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.hs-lbl {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  display: block;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.hs-val {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+
+/* Crop Matrix Table */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.agri-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 8px;
+  font-size: 0.82rem;
+}
+
+.agri-matrix-table th, .agri-matrix-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.agri-matrix-table th {
+  background: var(--bg-main);
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.agri-matrix-table tr:hover {
+  background: #f8fafc;
+}
+
+/* Sell Timing Banner */
+.sb-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sb-lbl {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  display: block;
+  font-weight: 600;
+}
+
+.sb-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin: 2px 0 0 0;
+}
+
+.sb-note {
+  font-size: 0.8rem;
+  color: var(--brown-primary);
+  font-style: italic;
+  margin: 10px 0 0 0;
+}
+
+/* What-If Cards */
+.whatif-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.wi-card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  box-shadow: var(--shadow-sm);
+}
+
+.wi-card.recommended {
+  border: 2px solid var(--agri-green);
+  background: var(--agri-green-light);
+}
+
+.wi-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 0 0 8px 0;
+  display: flex;
+  justify-content: space-between;
+}
+
+
 
 
 

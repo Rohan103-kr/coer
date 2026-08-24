@@ -1,144 +1,322 @@
-// app.js - Main Application Entrypoint & State Orchestrator for Roorkee & Haridwar
+// app.js - CropPulse AI & DrainMind Platform State Orchestrator
 
-let currentZonesGeoJSON = null;
-let isLiveWeatherActive = false;
-let liveWeatherInterval = null;
-let activeStationKey = 'roorkee';
+let mandiChartInstance = null;
+let currentAgriResult = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. Initialize Lucide icons
   lucide.createIcons();
-
-  // 2. Initialize Leaflet Map
-  initMap();
-
-  // 3. Fetch initial data for 100mm rainfall baseline
-  await fetchZones(100);
-  await fetchRoads(100);
-  await fetchBottlenecks();
   
-  // 4. Calculate default route
-  calculateRoute();
+  // Initial CropPulse Analysis
+  await runAgriAnalysis();
 
-  // 5. Connect WebSocket for live updates
-  initWebSocket();
+  // Lazy Init GIS Map if DrainMind tab is opened
+  initMap();
 });
 
-function switchMode(mode) {
-  const citizenTab = document.getElementById('tab-citizen');
-  const municipalTab = document.getElementById('tab-municipal');
-  const citizenPanel = document.getElementById('panel-citizen');
-  const municipalPanel = document.getElementById('panel-municipal');
-
-  if (mode === 'citizen') {
-    citizenTab.classList.add('active');
-    municipalTab.classList.remove('active');
-    citizenPanel.classList.add('active');
-    municipalPanel.classList.remove('active');
-    clearMunicipalHighlights();
-    if (currentRoutesData && selectedRouteKey) {
-      selectRouteOption(selectedRouteKey);
-    }
-  } else {
-    municipalTab.classList.add('active');
-    citizenTab.classList.remove('active');
-    municipalPanel.classList.add('active');
-    citizenPanel.classList.remove('active');
-    
-    clearRouteLines();
-    
-    if (currentZonesGeoJSON && currentZonesGeoJSON.features && currentZonesGeoJSON.features.length > 0) {
-      const topCritical = [...currentZonesGeoJSON.features].sort((a, b) => b.properties.flood_probability - a.properties.flood_probability)[0];
-      if (topCritical) {
-        focusZoneOnMap(topCritical.properties.zone_id);
+function switchAgriTab(tabKey) {
+  const tabs = ['advisor', 'selltiming', 'whatif', 'drainmind'];
+  tabs.forEach(t => {
+    const btn = document.getElementById(`tab-${t}`);
+    const panel = document.getElementById(`agri-panel-${t}`);
+    if (btn && panel) {
+      if (t === tabKey) {
+        btn.classList.add('active');
+        panel.classList.add('active');
+      } else {
+        btn.classList.remove('active');
+        panel.classList.remove('active');
       }
     }
-    
-    runOptimization();
+  });
+
+  if (tabKey === 'selltiming') {
+    const selectedCrop = document.getElementById('sell-crop-select').value;
+    loadSellTimingChart(selectedCrop);
+  } else if (tabKey === 'drainmind' && map) {
+    setTimeout(() => { map.invalidateSize(); }, 200);
   }
 }
 
-/* Uttarakhand Weather Station Selection Handler */
-async function onStationChanged(stationKey) {
-  activeStationKey = stationKey;
-  if (isLiveWeatherActive) {
-    await refreshLiveWeatherFeed(stationKey);
-  }
-}
+/* 🌾 Crop-to-Market Recommendation Engine Handler */
+async function runAgriAnalysis() {
+  const loc = document.getElementById('agri-state').value;
+  const land = parseFloat(document.getElementById('land-acres').value);
+  const soil = document.getElementById('agri-soil').value;
+  const water = document.getElementById('agri-water').value;
+  const budget = parseFloat(document.getElementById('agri-budget').value);
 
-/* Live Weather Toggle Handler */
-async function toggleLiveWeatherMode() {
-  const liveBtn = document.getElementById('live-weather-btn');
-  const liveBanner = document.getElementById('live-weather-card');
-  const liveLabel = document.getElementById('live-mode-label');
+  document.getElementById('header-loc-disp').innerText = `Region: ${loc}`;
 
-  isLiveWeatherActive = !isLiveWeatherActive;
-
-  if (isLiveWeatherActive) {
-    liveBtn.classList.add('active');
-    liveBanner.style.display = 'block';
-    liveLabel.innerText = "LIVE WEATHER: ACTIVE";
-    
-    await refreshLiveWeatherFeed(activeStationKey);
-
-    liveWeatherInterval = setInterval(() => refreshLiveWeatherFeed(activeStationKey), 60000);
-  } else {
-    liveBtn.classList.remove('active');
-    liveBanner.style.display = 'none';
-    liveLabel.innerText = "LIVE WEATHER (Uttarakhand)";
-    
-    if (liveWeatherInterval) clearInterval(liveWeatherInterval);
-    
-    onRainfallSliderChange(document.getElementById('rainfall-slider').value);
-  }
-}
-
-async function refreshLiveWeatherFeed(stationKey = 'roorkee') {
   try {
-    const resp = await fetch(`/api/live-weather?station=${stationKey}`);
-    const weather = await resp.json();
+    const resp = await fetch('/api/croppulse/recommend', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: loc,
+        land_acres: land,
+        soil_type: soil,
+        water_access: water,
+        budget_inr: budget
+      })
+    });
 
-    document.getElementById('live-rf-val').innerText = `${weather.rainfall_24h_mm} mm (24h)`;
-    document.getElementById('live-temp-val').innerText = `${weather.temperature_c}°C (${weather.humidity_pct}%)`;
-    document.getElementById('live-weather-desc').innerText = `Condition: ${weather.weather_description} • Wind: ${weather.wind_speed_kmh} km/h`;
-    document.getElementById('live-station-time').innerText = `${weather.location_name} Station • ${weather.timestamp.split('T')[1] || 'Just now'}`;
+    const res = await resp.json();
+    currentAgriResult = res;
 
-    const liveRainfall = weather.rainfall_24h_mm;
-    document.getElementById('sim-rain-val').innerText = `${liveRainfall} mm (LIVE)`;
-    document.getElementById('current-rainfall-disp').innerText = `Live Rain: ${liveRainfall} mm`;
+    // Render Hero Recommended Crop Banner
+    const rec = res.recommended_crop;
+    document.getElementById('hero-crop-name').innerText = rec.crop.toUpperCase();
+    document.getElementById('hero-decision-score').innerText = `Decision Score: ${rec.decision_score} / 100`;
+    document.getElementById('hero-net-profit').innerText = `₹ ${rec.expected_profit.toLocaleString()}`;
+    document.getElementById('hero-yield-val').innerText = `${rec.yield_per_acre} q/acre (${rec.total_yield_quintals} q)`;
+    document.getElementById('hero-peak-price').innerText = `₹ ${rec.peak_mandi_price.toLocaleString()} / q`;
+    document.getElementById('hero-sell-window').innerText = rec.peak_window;
 
-    await fetchZones(liveRainfall);
-    await fetchRoads(liveRainfall);
-    await fetchBottlenecks();
-    if (currentRoutesData) {
-      calculateRoute();
-    }
+    const rBadge = document.getElementById('hero-risk-badge');
+    rBadge.innerText = `Weather Risk: ${rec.weather_risk}`;
+    rBadge.className = `risk-badge ${getAgriRiskClass(rec.weather_risk)}`;
+
+    // Render Matrix Table
+    renderCropMatrixTable(res.crop_comparison);
   } catch (err) {
-    console.error("Error refreshing live weather feed:", err);
+    console.error("Error running CropPulse analysis:", err);
   }
 }
 
-async function startJudgeTour() {
-  switchMode('citizen');
-  document.getElementById('rainfall-slider').value = 150;
-  onRainfallSliderChange(150);
-  
-  setTimeout(async () => {
-    await calculateRoute();
-    selectRouteOption('safest');
+function renderCropMatrixTable(cropList) {
+  const tbody = document.getElementById('crop-matrix-body');
+  tbody.innerHTML = '';
+
+  cropList.forEach(item => {
+    const tr = document.createElement('tr');
+    if (item.is_recommended) {
+      tr.style.background = '#f0fdf4';
+      tr.style.fontWeight = '600';
+    }
+
+    tr.innerHTML = `
+      <td><strong>${item.crop} ${item.is_recommended ? '⭐' : ''}</strong></td>
+      <td>${item.yield_per_acre} q/acre</td>
+      <td>₹ ${item.total_cost.toLocaleString()}</td>
+      <td>₹ ${item.peak_mandi_price.toLocaleString()} /q</td>
+      <td>₹ ${item.total_revenue.toLocaleString()}</td>
+      <td class="text-green"><strong>₹ ${item.expected_profit.toLocaleString()}</strong></td>
+      <td><span class="risk-badge ${getAgriRiskClass(item.weather_risk)}">${item.weather_risk}</span></td>
+      <td><strong>${item.decision_score}</strong> / 100</td>
+      <td>
+        <button class="btn btn-sm btn-outline-green" onclick="inspectCropTiming('${item.crop}')">
+          📈 View Timing
+        </button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function inspectCropTiming(cropName) {
+  document.getElementById('sell-crop-select').value = cropName;
+  switchAgriTab('selltiming');
+}
+
+/* 📈 Sell Timing AI Chart Handler */
+async function loadSellTimingChart(cropName) {
+  try {
+    const resp = await fetch(`/api/croppulse/sell-timing?crop=${cropName}`);
+    const data = await resp.json();
+
+    document.getElementById('st-window-disp').innerText = data.peak_window;
+    document.getElementById('st-peak-price-disp').innerText = `₹ ${data.peak_expected_price.toLocaleString()} / q`;
     
-    setTimeout(() => {
-      if (currentZonesGeoJSON && currentZonesGeoJSON.features && currentZonesGeoJSON.features[0]) {
-        openZoneModal(currentZonesGeoJSON.features[0].properties);
+    const baseP = data.base_price;
+    const gain = data.peak_expected_price - baseP;
+    document.getElementById('st-gain-disp').innerText = `+ ₹ ${gain.toLocaleString()} / q`;
+    document.getElementById('st-advisory-note').innerText = data.recommendation_note;
+
+    // Render Chart.js
+    const ctx = document.getElementById('mandiPriceChart').getContext('2d');
+    if (mandiChartInstance) {
+      mandiChartInstance.destroy();
+    }
+
+    const labels = data.price_trajectory.map(d => d.month);
+    const prices = data.price_trajectory.map(d => d.price);
+
+    mandiChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: `${cropName} Mandi Price Forecast (₹ / quintal)`,
+          data: prices,
+          borderColor: '#d97706',
+          backgroundColor: 'rgba(217, 119, 6, 0.12)',
+          borderWidth: 3,
+          fill: true,
+          tension: 0.3,
+          pointRadius: 6,
+          pointBackgroundColor: '#d97706'
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: true }
+        },
+        scales: {
+          y: {
+            grid: { color: '#f1f5f9' }
+          },
+          x: {
+            grid: { color: '#f1f5f9' }
+          }
+        }
       }
-      
-      setTimeout(() => {
-        closeZoneModal();
-        switchMode('municipal');
-        runOptimization();
-      }, 4000);
-    }, 4000);
-  }, 2000);
+    });
+  } catch (err) {
+    console.error("Error loading sell timing chart:", err);
+  }
+}
+
+/* 🔥 What-If Climate Simulator Handler */
+async function onWhatIfSliderChange(val) {
+  document.getElementById('sim-rain-disp').innerText = `${val} mm`;
+
+  const loc = document.getElementById('agri-state').value;
+  const land = parseFloat(document.getElementById('land-acres').value);
+  const soil = document.getElementById('agri-soil').value;
+  const water = document.getElementById('agri-water').value;
+  const budget = parseFloat(document.getElementById('agri-budget').value);
+
+  try {
+    const resp = await fetch('/api/croppulse/what-if', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        location: loc,
+        land_acres: land,
+        soil_type: soil,
+        water_access: water,
+        budget_inr: budget,
+        rainfall_mm: parseFloat(val)
+      })
+    });
+    const res = await resp.json();
+
+    const container = document.getElementById('whatif-impact-container');
+    container.innerHTML = '';
+
+    res.crop_comparison.slice(0, 3).forEach(crop => {
+      const card = document.createElement('div');
+      card.className = `wi-card ${crop.is_recommended ? 'recommended' : ''}`;
+      card.innerHTML = `
+        <div class="wi-title">
+          <span>${crop.crop} ${crop.is_recommended ? '⭐' : ''}</span>
+          <span style="font-size:0.8rem; color:#64748b;">Score: ${crop.decision_score}</span>
+        </div>
+        <div style="font-size:0.82rem; margin-bottom: 6px;">Yield: <strong>${crop.yield_per_acre} q/acre</strong></div>
+        <div style="font-size:0.82rem; margin-bottom: 6px;">Peak Price: <strong>₹ ${crop.peak_mandi_price.toLocaleString()} /q</strong></div>
+        <div style="font-size:1.1rem; font-weight:800; color:#15803d;">Profit: ₹ ${crop.expected_profit.toLocaleString()}</div>
+      `;
+      container.appendChild(card);
+    });
+  } catch (err) {
+    console.error("Error running what-if simulation:", err);
+  }
+}
+
+/* 📄 Official PDF Farmer Report Exporter */
+function exportFarmerReportPDF() {
+  if (!currentAgriResult) {
+    alert("Please run crop analysis first.");
+    return;
+  }
+
+  const res = currentAgriResult;
+  const printWin = window.open('', '_blank');
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <title>CropPulse AI - Farmer Executive Advisory Report</title>
+      <style>
+        body { font-family: 'Helvetica Neue', Arial, sans-serif; padding: 40px; color: #0f172a; }
+        .header { border-bottom: 3px solid #15803d; padding-bottom: 12px; margin-bottom: 24px; }
+        .title { font-size: 24px; font-weight: 800; color: #15803d; margin: 0; }
+        .subtitle { font-size: 13px; color: #64748b; margin-top: 4px; }
+        .hero-box { background: #f0fdf4; border: 2px solid #15803d; padding: 18px; border-radius: 8px; margin-bottom: 24px; }
+        .hero-title { font-size: 20px; font-weight: 800; color: #15803d; margin: 0 0 8px 0; }
+        .meta-grid { display: flex; justify-content: space-between; margin-top: 12px; }
+        .meta-val { font-weight: 800; font-size: 16px; color: #15803d; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+        th, td { border: 1px solid #cbd5e1; padding: 10px 12px; text-align: left; font-size: 13px; }
+        th { background: #f8fafc; font-weight: 700; color: #475569; }
+        .footer { margin-top: 40px; border-top: 1px solid #e2e8f0; pt: 12px; font-size: 11px; color: #94a3b8; text-align: center; }
+      </style>
+    </head>
+    <body>
+      <div class="header">
+        <h1 class="title">🌾 CROPPULSE AI — FARMER CROP & MARKET ADVISORY</h1>
+        <div class="subtitle">AgriTech Decision Intelligence Platform • Region: ${res.farmer_inputs.location}</div>
+      </div>
+
+      <div class="hero-box">
+        <div style="font-size: 11px; font-weight: 800; color: #15803d;">RECOMMENDED CROP CHOICE</div>
+        <h2 class="hero-title">${res.recommended_crop.crop} ⭐</h2>
+        <div class="meta-grid">
+          <div>Land Area: <strong>${res.farmer_inputs.land_acres} Acres</strong></div>
+          <div>Expected Net Profit: <div class="meta-val">₹ ${res.recommended_crop.expected_profit.toLocaleString()}</div></div>
+          <div>Peak Mandi Price: <div class="meta-val">₹ ${res.recommended_crop.peak_mandi_price.toLocaleString()} / q</div></div>
+          <div>Optimal Selling Window: <strong>${res.recommended_crop.peak_window}</strong></div>
+        </div>
+      </div>
+
+      <h3>CROP COMPARISON & RISK EVALUATION MATRIX</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Crop</th>
+            <th>Expected Yield</th>
+            <th>Total Cost</th>
+            <th>Revenue</th>
+            <th>Net Profit</th>
+            <th>Risk Level</th>
+            <th>Decision Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${res.crop_comparison.map(c => `
+            <tr>
+              <td><strong>${c.crop} ${c.is_recommended ? '⭐' : ''}</strong></td>
+              <td>${c.yield_per_acre} q/acre</td>
+              <td>₹ ${c.total_cost.toLocaleString()}</td>
+              <td>₹ ${c.total_revenue.toLocaleString()}</td>
+              <td style="color:#15803d; font-weight:700;">₹ ${c.expected_profit.toLocaleString()}</td>
+              <td>${c.weather_risk}</td>
+              <td><strong>${c.decision_score}</strong> / 100</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+
+      <div class="footer">
+        Generated by CropPulse AI • Agmarknet & OGD India Data Driven • ${new Date().toLocaleString()}
+      </div>
+    </body>
+    </html>
+  `;
+
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.focus();
+  setTimeout(() => { printWin.print(); }, 500);
+}
+
+function getAgriRiskClass(riskStr) {
+  if (riskStr === 'Low') return 'risk-low';
+  if (riskStr === 'Medium') return 'risk-mod';
+  return 'risk-high';
 }
 
 function openMetricsModal() {
@@ -149,105 +327,6 @@ function closeMetricsModal(e) {
   document.getElementById('metrics-modal').classList.remove('active');
 }
 
-/* Audio Voice Alerts Disabled */
 function speakAlert(text) {
   return;
-}
-
-async function fetchZones(rainfall = 100) {
-  try {
-    const resp = await fetch(`/api/zones?rainfall=${rainfall}`);
-    currentZonesGeoJSON = await resp.json();
-    
-    updateZonesMap(currentZonesGeoJSON);
-    populateCriticalZones(currentZonesGeoJSON);
-
-    const risks = currentZonesGeoJSON.features.map(f => f.properties.flood_probability || 0);
-    const avgRisk = Math.round(risks.reduce((a, b) => a + b, 0) / (risks.length || 1));
-    document.getElementById('city-avg-risk').innerText = `Avg Risk: ${avgRisk}%`;
-  } catch (err) {
-    console.error("Error fetching zones data:", err);
-  }
-}
-
-async function fetchRoads(rainfall = 100) {
-  try {
-    const resp = await fetch(`/api/roads?rainfall=${rainfall}`);
-    const roads = await resp.json();
-    updateRoadsMap(roads);
-  } catch (err) {
-    console.error("Error fetching roads data:", err);
-  }
-}
-
-let activeModalZoneProps = null;
-
-function openZoneModal(props) {
-  activeModalZoneProps = props;
-  
-  document.getElementById('modal-zone-id').innerText = props.zone_id;
-  document.getElementById('modal-zone-name').innerText = props.name;
-  document.getElementById('modal-ward-name').innerText = `${props.ward} • Roorkee/Haridwar Region`;
-  
-  const riskPct = document.getElementById('modal-risk-pct');
-  riskPct.innerText = `${props.flood_probability}%`;
-  riskPct.style.color = props.risk_color;
-
-  document.getElementById('modal-rainfall-val').innerText = `${props.current_rainfall_mm || currentRainfallLevel} mm`;
-  document.getElementById('modal-elev-val').innerText = `${props.elevation} m`;
-  document.getElementById('modal-pop-val').innerText = props.population.toLocaleString();
-
-  const xaiContainer = document.getElementById('xai-bars');
-  xaiContainer.innerHTML = '';
-
-  if (props.explanations && props.explanations.length > 0) {
-    props.explanations.forEach(item => {
-      const barItem = document.createElement('div');
-      barItem.className = 'xai-bar-item';
-      barItem.innerHTML = `
-        <div class="xai-bar-label">
-          <span>${item.factor} (${item.value})</span>
-          <span>${item.weight}% impact</span>
-        </div>
-        <div class="xai-bar-bg">
-          <div class="xai-bar-fill" style="width: ${item.weight}%;"></div>
-        </div>
-      `;
-      xaiContainer.appendChild(barItem);
-    });
-  }
-
-  document.getElementById('zone-modal').classList.add('active');
-}
-
-function closeZoneModal(e) {
-  document.getElementById('zone-modal').classList.remove('active');
-}
-
-function setAsRouteOriginFromModal() {
-  if (activeModalZoneProps) {
-    const originSelect = document.getElementById('route-origin');
-    if (activeModalZoneProps.zone_id === 'ZONE-RK01') originSelect.value = 'N_IIT_ROORKEE';
-    else if (activeModalZoneProps.zone_id === 'ZONE-RK02') originSelect.value = 'N_CIVIL_LINES';
-    else if (activeModalZoneProps.zone_id === 'ZONE-RK03') originSelect.value = 'N_SOLANI_AQUEDUCT';
-    else if (activeModalZoneProps.zone_id === 'ZONE-HW02') originSelect.value = 'N_JWALAPUR';
-    
-    closeZoneModal();
-    switchMode('citizen');
-    calculateRoute();
-  }
-}
-
-function initWebSocket() {
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  const wsUrl = `${protocol}//${window.location.host}/ws/live-updates`;
-  
-  try {
-    const ws = new WebSocket(wsUrl);
-    ws.onmessage = (event) => {
-      console.log("⚡ Live WebSocket Event Received:", event.data);
-    };
-  } catch (err) {
-    console.log("WebSocket connect error (fallback active):", err);
-  }
 }
