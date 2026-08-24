@@ -119,8 +119,6 @@ async function refreshLiveWeatherFeed(stationKey = 'roorkee') {
 }
 
 async function startJudgeTour() {
-  speakAlert("Starting 1-Minute Live Demo Tour for Hackathon Evaluators.");
-  
   switchMode('citizen');
   document.getElementById('rainfall-slider').value = 150;
   onRainfallSliderChange(150);
@@ -138,7 +136,6 @@ async function startJudgeTour() {
         closeZoneModal();
         switchMode('municipal');
         runOptimization();
-        speakAlert("Demo tour completed. Solani Aqueduct risk reduced to 25% with 190,000 citizens protected.");
       }, 4000);
     }, 4000);
   }, 2000);
@@ -152,13 +149,9 @@ function closeMetricsModal(e) {
   document.getElementById('metrics-modal').classList.remove('active');
 }
 
+/* Audio Voice Alerts Disabled */
 function speakAlert(text) {
-  if ('speechSynthesis' in window) {
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 1.0;
-    utterance.pitch = 1.0;
-    window.speechSynthesis.speak(utterance);
-  }
+  return;
 }
 
 async function fetchZones(rainfall = 100) {
