@@ -9,6 +9,7 @@ let drainsLayer = null;
 let routePolylines = [];
 let incidentMarkers = [];
 let municipalHighlightLayer = null;
+let cityLabelMarkersGroup = null;
 let currentZonesData = null;
 let currentDrainsData = [];
 
@@ -20,7 +21,12 @@ function initMap() {
     zoomControl: true
   });
 
-  // Basemap Tile Layers
+  // Standard OpenStreetMap Tiles with prominent city names, road labels, and landmarks
+  tileLayers.osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+  });
+
   tileLayers.voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
     attribution: '&copy; CARTO &copy; OpenStreetMap'
@@ -28,7 +34,7 @@ function initMap() {
 
   tileLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     maxZoom: 18,
-    attribution: 'Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    attribution: 'Esri &mdash; Source: Esri'
   });
 
   tileLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
@@ -36,11 +42,45 @@ function initMap() {
     attribution: '&copy; CARTO &copy; OpenStreetMap'
   });
 
-  currentTileLayer = tileLayers.voyager;
+  currentTileLayer = tileLayers.osm;
   currentTileLayer.addTo(map);
 
   municipalHighlightLayer = L.layerGroup().addTo(map);
+  cityLabelMarkersGroup = L.layerGroup().addTo(map);
+
+  // Add prominent permanent City Label Markers
+  addCityNameLabels();
+
   console.log("🗺️ Leaflet GIS Map Initialized for Roorkee & Haridwar Flood Resilience Platform");
+}
+
+function addCityNameLabels() {
+  if (cityLabelMarkersGroup) {
+    cityLabelMarkersGroup.clearLayers();
+  }
+
+  // 1. ROORKEE CITY Permanent Label
+  const roorkeeMarker = L.marker([29.8649, 77.8965], {
+    icon: L.divIcon({
+      className: 'city-name-badge badge-roorkee',
+      html: '🏙️ ROORKEE CITY',
+      iconSize: [120, 28],
+      iconAnchor: [60, 14]
+    })
+  });
+
+  // 2. HARIDWAR CITY Permanent Label
+  const haridwarMarker = L.marker([29.9560, 78.1700], {
+    icon: L.divIcon({
+      className: 'city-name-badge badge-haridwar',
+      html: '🏛️ HARIDWAR CITY',
+      iconSize: [130, 28],
+      iconAnchor: [65, 14]
+    })
+  });
+
+  cityLabelMarkersGroup.addLayer(roorkeeMarker);
+  cityLabelMarkersGroup.addLayer(haridwarMarker);
 }
 
 function switchBasemap(type) {
@@ -49,9 +89,10 @@ function switchBasemap(type) {
     currentTileLayer = tileLayers[type];
     currentTileLayer.addTo(map);
 
-    // Update active class on buttons
     document.querySelectorAll('.bm-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    if (event && event.target) {
+      event.target.classList.add('active');
+    }
   }
 }
 
@@ -74,7 +115,7 @@ function updateZonesMap(zonesGeoJSON) {
         weight: 1.8,
         opacity: 0.9,
         color: '#ffffff',
-        fillOpacity: 0.5
+        fillOpacity: 0.4
       };
     },
     onEachFeature: function (feature, layer) {
@@ -83,7 +124,7 @@ function updateZonesMap(zonesGeoJSON) {
       
       layer.on({
         mouseover: function (e) {
-          layer.setStyle({ fillOpacity: 0.75, weight: 3 });
+          layer.setStyle({ fillOpacity: 0.7, weight: 3 });
         },
         mouseout: function (e) {
           zonesLayer.resetStyle(layer);

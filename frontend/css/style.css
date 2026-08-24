@@ -1127,5 +1127,34 @@ body {
   font-size: 0.75rem;
 }
 
+/* Permanent City Name Map Badges */
+.city-name-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.18);
+  white-space: nowrap;
+  letter-spacing: 0.03em;
+  pointer-events: none;
+}
+
+.badge-roorkee {
+  background: #ffffff;
+  color: var(--blue-dark);
+  border: 2px solid var(--blue-primary);
+}
+
+.badge-haridwar {
+  background: #ffffff;
+  color: var(--brown-primary);
+  border: 2px solid var(--brown-amber);
+}
+
+
 
 
