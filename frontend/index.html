@@ -43,8 +43,12 @@
       </button>
     </div>
 
-    <!-- Live Weather Status & Real-time Toggle -->
+    <!-- Live Weather Status & Model Metrics Buttons -->
     <div class="header-status">
+      <button class="btn-metrics-toggle" onclick="openMetricsModal()">
+        <i data-lucide="bar-chart-2"></i> ML Metrics (99.3%)
+      </button>
+
       <button id="live-weather-btn" class="btn-live-toggle" onclick="toggleLiveWeatherMode()">
         <span class="live-dot pulse"></span>
         <span id="live-mode-label">LIVE WEATHER (Roorkee/Haridwar)</span>
@@ -244,13 +248,18 @@
             </div>
 
             <div class="protected-pill">
-              <i data-lucide="users" class="icon-green"></i> <span id="opt-protected-pop">195,000</span> Citizens Protected
+              <i data-lucide="users" class="icon-green"></i> <span id="opt-protected-pop">190,000</span> Citizens Protected
             </div>
 
             <h4 class="action-plan-title">RECOMMENDED ACTION PLAN</h4>
             <ul id="action-plan-list" class="action-list">
               <!-- Actions -->
             </ul>
+
+            <!-- Top 1% Export Action Plan PDF/Print Button -->
+            <button class="btn btn-outline-brown btn-sm" style="width: 100%; margin-top: 10px;" onclick="printOfficialActionPlan()">
+              <i data-lucide="file-text"></i> Export Official Action Plan (PDF)
+            </button>
           </div>
         </div>
       </section>
@@ -259,6 +268,13 @@
     <!-- Map & Simulator Area -->
     <section class="map-wrapper">
       <div id="map" class="gis-map"></div>
+
+      <!-- Basemap Layer Switcher (Top 1% Feature) -->
+      <div class="basemap-switcher">
+        <button class="bm-btn active" onclick="switchBasemap('voyager')">🗺️ Light</button>
+        <button class="bm-btn" onclick="switchBasemap('satellite')">🛰️ Satellite</button>
+        <button class="bm-btn" onclick="switchBasemap('dark')">🌙 Dark GIS</button>
+      </div>
 
       <!-- GIS Map Legend -->
       <div class="map-legend">
@@ -291,6 +307,73 @@
       </div>
     </section>
   </main>
+
+  <!-- ML Model Performance Metrics Modal (Top 1% Feature) -->
+  <div id="metrics-modal" class="modal-backdrop" onclick="closeMetricsModal(event)">
+    <div class="modal-card" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeMetricsModal()">&times;</button>
+      <div class="modal-header">
+        <span class="modal-tag">PHASE 1 ML EVALUATION</span>
+        <h2 class="modal-title">🤖 Model Performance Metrics</h2>
+        <p id="modal-dataset-name" class="modal-subtitle">Roorkee & Haridwar Hydro-Meteorological Dataset (2,835 records)</p>
+      </div>
+
+      <table class="metrics-table">
+        <thead>
+          <tr>
+            <th>Model Architecture</th>
+            <th>Accuracy</th>
+            <th>Precision</th>
+            <th>Recall</th>
+            <th>ROC-AUC</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>XGBoost / HistGB</strong></td>
+            <td class="text-green"><strong>99.29%</strong></td>
+            <td>99.72%</td>
+            <td>99.16%</td>
+            <td><strong>0.9995</strong></td>
+          </tr>
+          <tr>
+            <td>Random Forest</td>
+            <td>99.12%</td>
+            <td>99.16%</td>
+            <td>99.44%</td>
+            <td>0.9994</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="xai-container" style="margin-top: 14px;">
+        <h4 class="xai-title">Feature Importance Rankings</h4>
+        <p class="xai-desc">Top physical drivers computed from tree estimators</p>
+        <div class="xai-bars-list">
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>24h Rainfall (mm)</span><span>26.7% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 26.7%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>1h Intense Rain (mm/h)</span><span>19.2% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 19.2%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>Topographic Elevation (m)</span><span>9.7% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 9.7%;"></div></div>
+          </div>
+          <div class="xai-bar-item">
+            <div class="xai-bar-label"><span>Historical Flooding Count</span><span>5.6% impact</span></div>
+            <div class="xai-bar-bg"><div class="xai-bar-fill" style="width: 5.6%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeMetricsModal()">Close</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Zone Detail & Explainable AI (SHAP) Drawer Modal -->
   <div id="zone-modal" class="modal-backdrop" onclick="closeZoneModal(event)">

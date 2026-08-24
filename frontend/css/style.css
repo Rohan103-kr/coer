@@ -987,3 +987,83 @@ body {
   color: var(--blue-dark);
 }
 
+/* Basemap Switcher Floating Control */
+.basemap-switcher {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  display: flex;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 3px;
+  gap: 3px;
+  z-index: 800;
+  box-shadow: var(--shadow-sm);
+}
+
+.bm-btn {
+  border: none;
+  background: transparent;
+  padding: 4px 10px;
+  font-family: inherit;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bm-btn:hover {
+  color: var(--text-main);
+}
+
+.bm-btn.active {
+  background: var(--blue-primary);
+  color: #ffffff;
+}
+
+/* ML Metrics Button */
+.btn-metrics-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--green-soft);
+  border: 1px solid #bbf7d0;
+  color: var(--green-primary);
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-metrics-toggle:hover {
+  background-color: #bbf7d0;
+}
+
+/* Metrics Table */
+.metrics-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+  font-size: 0.82rem;
+}
+
+.metrics-table th, .metrics-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.metrics-table th {
+  background: var(--bg-main);
+  font-weight: 700;
+  color: var(--text-muted);
+}
+
+

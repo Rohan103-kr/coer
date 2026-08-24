@@ -4,7 +4,6 @@ let currentRoutesData = null;
 let selectedRouteKey = 'safest';
 
 function onRouteInputsChanged() {
-  // Reset route lines on input change
   clearRouteLines();
   document.getElementById('route-results-container').style.display = 'none';
 }
@@ -78,6 +77,13 @@ function selectRouteOption(modeKey) {
     else if (modeKey === 'balanced') color = '#0284c7'; // Blue for balanced
     
     drawRouteOnMap(route, color);
+    
+    // Top 1% Voice Navigation Feedback
+    if (modeKey === 'safest') {
+      speakAlert(`Safest route selected. Travel time is ${route.travel_time_min} minutes with low flood risk.`);
+    } else if (modeKey === 'fastest' && route.avg_flood_risk > 50) {
+      speakAlert(`Warning: Fastest route has high waterlogging risk of ${route.avg_flood_risk} percent.`);
+    }
   }
 }
 
@@ -106,8 +112,8 @@ async function submitIncidentReport() {
     road_id: roadId,
     water_depth: depthEl ? depthEl.value : 'Medium',
     passable: passableEl ? (passableEl.value === 'yes') : false,
-    latitude: 12.9815,
-    longitude: 80.2180
+    latitude: 29.8649,
+    longitude: 77.8965
   };
 
   try {
@@ -119,10 +125,11 @@ async function submitIncidentReport() {
     const res = await resp.json();
     
     closeReportModal();
+    speakAlert(`Incident report received for road ${roadId}. Road risk set to 95 percent. Recalculating routes.`);
     alert(`🚨 Incident report submitted! Road ${roadId} risk updated to 95%. Recalculating routes...`);
     
     // Add visual marker on map
-    addIncidentMarker(12.9815, 80.2180, roadId, payload.water_depth);
+    addIncidentMarker(29.8649, 77.8965, roadId, payload.water_depth);
     
     // Re-fetch roads and routes
     await fetchRoads();

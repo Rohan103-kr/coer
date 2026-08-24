@@ -1,6 +1,8 @@
 // map.js - Leaflet GIS Map Management for Roorkee & Haridwar DrainMind AI
 
 let map = null;
+let currentTileLayer = null;
+let tileLayers = {};
 let zonesLayer = null;
 let roadsLayer = null;
 let drainsLayer = null;
@@ -18,14 +20,39 @@ function initMap() {
     zoomControl: true
   });
 
-  // Minimalist Light CartoDB Basemap
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+  // Basemap Tile Layers
+  tileLayers.voyager = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a> &copy; OpenStreetMap'
-  }).addTo(map);
+    attribution: '&copy; CARTO &copy; OpenStreetMap'
+  });
+
+  tileLayers.satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 18,
+    attribution: 'Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+  });
+
+  tileLayers.dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '&copy; CARTO &copy; OpenStreetMap'
+  });
+
+  currentTileLayer = tileLayers.voyager;
+  currentTileLayer.addTo(map);
 
   municipalHighlightLayer = L.layerGroup().addTo(map);
   console.log("🗺️ Leaflet GIS Map Initialized for Roorkee & Haridwar Flood Resilience Platform");
+}
+
+function switchBasemap(type) {
+  if (tileLayers[type]) {
+    map.removeLayer(currentTileLayer);
+    currentTileLayer = tileLayers[type];
+    currentTileLayer.addTo(map);
+
+    // Update active class on buttons
+    document.querySelectorAll('.bm-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+  }
 }
 
 function updateZonesMap(zonesGeoJSON) {
@@ -137,7 +164,6 @@ function updateDrainsMap(drainsData) {
   drainsLayer = L.layerGroup(drainLines).addTo(map);
 }
 
-// Fly to and highlight a specific ward when clicked in Municipal Hotspots list
 function focusZoneOnMap(zoneId) {
   if (!currentZonesData) return;
   
@@ -150,7 +176,6 @@ function focusZoneOnMap(zoneId) {
     
     municipalHighlightLayer.clearLayers();
     
-    // Draw pulsing highlight polygon
     const poly = L.polygon(feature.geometry.coordinates[0].map(c => [c[1], c[0]]), {
       color: '#dc2626',
       weight: 4,
@@ -179,7 +204,6 @@ function focusZoneOnMap(zoneId) {
   }
 }
 
-// Fly to and highlight suspected bottleneck drain
 function focusBottleneckDrain(drainId) {
   if (!currentDrainsData) return;
   const drain = currentDrainsData.find(d => d.drain_id === drainId || d.drain_name.includes(drainId));

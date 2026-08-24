@@ -59,6 +59,25 @@ function switchMode(mode) {
   }
 }
 
+/* ML Model Performance Metrics Modal */
+function openMetricsModal() {
+  document.getElementById('metrics-modal').classList.add('active');
+}
+
+function closeMetricsModal(e) {
+  document.getElementById('metrics-modal').classList.remove('active');
+}
+
+/* Voice Text-to-Speech Alert Helper */
+function speakAlert(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
+    window.speechSynthesis.speak(utterance);
+  }
+}
+
 /* Live Weather Toggle Handler */
 async function toggleLiveWeatherMode() {
   const liveBtn = document.getElementById('live-weather-btn');
